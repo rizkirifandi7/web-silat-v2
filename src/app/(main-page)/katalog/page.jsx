@@ -346,18 +346,19 @@ const KatalogPage = () => {
                         </Link>
                       </h3>
 
-                      <div className="mt-auto pt-4 border-t border-dashed border-border flex items-center justify-between">
-                        <p className="font-bold text-lg md:text-xl text-primary">
-                          {formatCurrency(product.price)}
-                        </p>
+                      <div className="mt-auto pt-4 border-t border-dashed border-border flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <p className="font-bold text-lg md:text-xl text-primary">
+                            {formatCurrency(product.price)}
+                          </p>
+                        </div>
                         <Button
                           asChild
-                          size="icon"
-                          variant="outline"
-                          className="h-8 w-8 rounded-none border-2 border-zinc-700 hover:border-primary hover:bg-primary hover:text-white md:hidden"
+                          size="sm"
+                          className="w-full rounded-none h-10 font-bold uppercase tracking-widest shadow-md hover:shadow-primary/20"
                         >
                           <Link href={`/katalog/${product.id}`}>
-                            <ArrowRight className="w-4 h-4" />
+                            Beli Sekarang
                           </Link>
                         </Button>
                       </div>

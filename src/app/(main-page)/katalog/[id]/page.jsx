@@ -4,146 +4,68 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Check, Truck, Shield, MessageCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  ShoppingCart,
+  Star,
+  Minus,
+  Plus,
+  Share2,
+  CheckCircle2,
+  Truck,
+  ShieldCheck,
+  Package,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Separator } from "@/components/ui/separator";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Mock Data
 const productData = {
   1: {
-    name: "Seragam Latihan Standar IPSI",
-    category: "Seragam",
+    name: "Seragam Silat Standar IPSI",
     price: 250000,
-    image: "/pusamada-logo.png",
-    description:
-      "Seragam latihan pencak silat standar IPSI dengan bahan drill berkualitas tinggi. Nyaman digunakan untuk latihan harian maupun pertandingan. Termasuk sabuk putih.",
+    category: "Seragam",
+    rating: 4.8,
+    reviews: 124,
+    stock: 50,
+    images: [
+      "/pusamada-logo.png", // Main image
+      "/pusamada-logo.png", // Thumb 1
+      "/pusamada-logo.png", // Thumb 2
+      "/pusamada-logo.png", // Thumb 3
+    ],
+    description: `
+      <p>Seragam pencak silat standar IPSI berkualitas tinggi, cocok untuk latihan rutin maupun pertandingan. Terbuat dari bahan drill yang kuat namun tetap nyaman dan menyerap keringat.</p>
+      <br/>
+      <p>Dirancang dengan jahitan ganda di titik-titik rawan sobek untuk ketahanan maksimal saat melakukan gerakan ekstrem seperti tendangan dan bantingan.</p>
+    `,
     specs: [
-      "Bahan: Drill Nagata / American Drill",
-      "Warna: Hitam Pekat",
-      "Jahitan: Ganda (Double Stitch)",
-      "Kelengkapan: Baju, Celana, Sabuk Putih",
+      { label: "Bahan", value: "American Drill High Quality" },
+      { label: "Warna", value: "Hitam Standar" },
+      { label: "Kelengkapan", value: "Baju, Celana, Sabuk Putih" },
+      { label: "Ukuran Tersedia", value: "S, M, L, XL, XXL" },
     ],
     sizes: ["S", "M", "L", "XL", "XXL"],
-    images: ["/pusamada-logo.png", "/pusamada-logo.png"],
   },
-  2: {
-    name: "Kaos Polo PUSAMADA Exclusive",
-    category: "Kaos",
-    price: 150000,
-    image: "/pusamada-logo.png",
-    description:
-      "Kaos Polo eksklusif dengan bordir logo PUSAMADA. Cocok untuk kegiatan santai atau acara semi-formal organisasi.",
-    specs: [
-      "Bahan: Lacoste Cotton CVC",
-      "Warna: Hitam / Putih",
-      "Logo: Bordir Komputer",
-      "Fitting: Regular Fit",
-    ],
-    sizes: ["S", "M", "L", "XL", "XXL", "3XL"],
-    images: ["/pusamada-logo.png"],
-  },
-  3: {
-    name: "Celana Pangsi Hitam",
-    category: "Seragam",
-    price: 120000,
-    image: "/pusamada-logo.png",
-    description:
-      "Celana pangsi tradisional longgar yang nyaman untuk bergerak bebas. Dilengkapi dengan karet pinggang dan tali pengikat.",
-    specs: [
-      "Bahan: Drill Standard",
-      "Model: Komprang / Pangsi",
-      "Saku: Kanan & Kiri (Resleting)",
-    ],
-    sizes: ["M", "L", "XL", "XXL"],
-    images: ["/pusamada-logo.png"],
-  },
-  4: {
-    name: "Ikat Kepala / Udeng Tradisional",
-    category: "Aksesoris",
-    price: 45000,
-    image: "/pusamada-logo.png",
-    description:
-      "Ikat kepala motif batik tradisional untuk melengkapi penampilan saat pentas seni atau upacara.",
-    specs: [
-      "Bahan: Katun Batik",
-      "Ukuran: All Size (Ikat Sendiri)",
-      "Motif: Mega Mendung / Parang",
-    ],
-    sizes: ["All Size"],
-    images: ["/pusamada-logo.png"],
-  },
-  5: {
-    name: "Tas Serut Gymsack Logo",
-    category: "Aksesoris",
-    price: 85000,
-    image: "/pusamada-logo.png",
-    description:
-      "Tas serut praktis untuk membawa perlengkapan latihan ringan seperti baju ganti dan botol minum.",
-    specs: [
-      "Bahan: Taslan Waterproof",
-      "Ukuran: 45 x 35 cm",
-      "Sablon: Plastisol",
-    ],
-    sizes: ["All Size"],
-    images: ["/pusamada-logo.png"],
-  },
-  6: {
-    name: "Jaket Hoodie Zipper",
-    category: "Jaket",
-    price: 275000,
-    image: "/pusamada-logo.png",
-    description:
-      "Jaket hoodie dengan resleting depan, bahan fleece tebal yang hangat dan nyaman.",
-    specs: [
-      "Bahan: Cotton Fleece 280gsm",
-      "Warna: Navy / Hitam",
-      "Saku: Depan Kanan Kiri",
-    ],
-    sizes: ["M", "L", "XL", "XXL"],
-    images: ["/pusamada-logo.png"],
-  },
-  7: {
-    name: "Pecing Pad Target Tendangan",
-    category: "Perlengkapan",
-    price: 185000,
-    image: "/pusamada-logo.png",
-    description:
-      "Target tendangan (pecing pad) ukuran sedang, awet dan kuat menahan benturan.",
-    specs: [
-      "Bahan Luar: Kulit Sintetis Murano",
-      "Isi: Busa Rebonded Padat",
-      "Ukuran: 50 x 35 cm",
-    ],
-    sizes: ["All Size"],
-    images: ["/pusamada-logo.png"],
-  },
-  8: {
-    name: "Body Protector Silat Standard",
-    category: "Perlengkapan",
-    price: 350000,
-    image: "/pusamada-logo.png",
-    description:
-      "Pelindung badan (body protector) standar latihan, aman untuk sparring ringan.",
-    specs: [
-      "Bahan: Kulit Sintetis",
-      "Warna: Hitam Polos",
-      "Ukuran: Adjustable Velcro",
-    ],
-    sizes: ["Remaja", "Dewasa"],
-    images: ["/pusamada-logo.png"],
-  },
-  // Fallback
   default: {
     name: "Produk Tidak Ditemukan",
-    category: "Umum",
     price: 0,
-    image: "/pusamada-logo.png",
-    description: "Mohon maaf, produk ini tidak tersedia.",
+    category: "-",
+    rating: 0,
+    reviews: 0,
+    stock: 0,
+    images: ["/pusamada-logo.png"],
+    description: "Detail produk tidak tersedia.",
     specs: [],
     sizes: [],
-    images: [],
   },
 };
 
@@ -158,167 +80,304 @@ const formatCurrency = (amount) => {
 const CatalogDetailPage = () => {
   const params = useParams();
   const id = params?.id;
-  const product = productData[id] || productData.default;
+  const product =
+    productData[id] || (Number(id) > 1 ? productData[1] : productData.default);
 
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "-");
-  const [mainImage, setMainImage] = useState(product.image);
+  const [mainImage, setMainImage] = useState(product.images[0]);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(product.sizes[0] || "");
 
-  const handleWhatsAppBuy = () => {
-    const message = `Halo Admin PUSAMADA, saya ingin membeli:\n\n*${product.name}*\nUkuran: ${selectedSize}\nHarga: ${formatCurrency(product.price)}\n\nMohon info ketersediaan stok & ongkir. Terima kasih.`;
-    const url = `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank");
+  const handleQuantityChange = (type) => {
+    if (type === "dec" && quantity > 1) setQuantity(quantity - 1);
+    if (type === "inc" && quantity < product.stock) setQuantity(quantity + 1);
   };
 
   return (
-    <main className="min-h-screen bg-background pb-20 pt-20">
-      <div className="w-full max-w-7xl mx-auto px-4">
-        {/* Breadcrumb */}
-        <div className="mb-6">
+    <main className="min-h-screen bg-background pb-20">
+      {/* 1. Header Section */}
+      <section className="relative py-20 overflow-hidden bg-zinc-900">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/bg-2.webp"
+            alt="Background"
+            fill
+            className="object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-linear-to-b from-black/80 via-black/60 to-background" />
+        </div>
+        <div className="container relative z-10 px-4 mx-auto pt-10">
           <Button
             variant="ghost"
             asChild
-            className="pl-0 hover:pl-2 transition-all"
+            className="pl-0 hover:pl-2 transition-all text-white hover:text-primary hover:bg-transparent mb-6"
           >
             <Link href="/katalog">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Kembali ke Katalog
             </Link>
           </Button>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Left: Image Gallery */}
+          <div className="flex flex-col md:flex-row gap-8 items-end">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 text-sm px-3 py-1 rounded-none skew-x-[-10deg]">
+                  <span className="skew-x-10">{product.category}</span>
+                </Badge>
+                {product.stock > 0 ? (
+                  <span className="flex items-center text-sm text-green-400 font-bold bg-green-900/20 px-3 py-1 rounded-none border border-green-800">
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Stok Tersedia
+                  </span>
+                ) : (
+                  <span className="flex items-center text-sm text-red-400 font-bold bg-red-900/20 px-3 py-1 rounded-none border border-red-800">
+                    Stok Habis
+                  </span>
+                )}
+              </div>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white uppercase italic mb-4 drop-shadow-xl leading-none">
+                {product.name}
+              </h1>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="w-full max-w-7xl mx-auto px-4 py-8 relative z-10 -mt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Left Column: Images */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-border">
+            <div className="relative aspect-square w-full bg-white rounded-none border-4 border-zinc-200 overflow-hidden shadow-xl -skew-x-2">
               <Image
                 src={mainImage}
                 alt={product.name}
                 fill
                 className="object-contain p-8"
               />
-            </div>
-            {/* Thumbnails */}
-            {product.images && product.images.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setMainImage(img)}
-                    className={`relative w-20 h-20 rounded-lg border-2 overflow-hidden bg-white shrink-0 ${mainImage === img ? "border-primary" : "border-transparent hover:border-border"}`}
-                  >
-                    <Image
-                      src={img}
-                      alt={`View ${idx}`}
-                      fill
-                      className="object-contain p-2"
-                    />
-                  </button>
-                ))}
+              <div className="absolute top-4 right-4">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full bg-white/80 backdrop-blur-sm border-2 border-zinc-200 hover:text-primary hover:border-primary transition-colors"
+                >
+                  <Share2 className="w-5 h-5" />
+                </Button>
               </div>
-            )}
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {product.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setMainImage(img)}
+                  className={`relative w-20 h-20 bg-white border-2 shrink-0 transition-all ${
+                    mainImage === img
+                      ? "border-primary ring-2 ring-primary/20 scale-105 z-10"
+                      : "border-zinc-200 hover:border-zinc-400"
+                  }`}
+                >
+                  <Image
+                    src={img}
+                    alt={`Thumbnail ${idx + 1}`}
+                    fill
+                    className="object-contain p-2"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Right: Product Info */}
+          {/* Right Column: Product Details & Purchase */}
           <div className="space-y-8">
-            <div>
-              <Badge variant="secondary" className="mb-2">
-                {product.category}
-              </Badge>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-foreground mb-2">
-                {product.name}
-              </h1>
-              <div className="text-3xl font-bold text-primary">
-                {formatCurrency(product.price)}
+            <div className="border-b-2 border-zinc-200 pb-8 space-y-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex text-yellow-500">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i < Math.floor(product.rating)
+                            ? "fill-current"
+                            : "text-zinc-300 fill-none"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    ({product.reviews} ulasan)
+                  </span>
+                </div>
+                <div className="text-5xl font-black text-primary italic tracking-tighter">
+                  {formatCurrency(product.price)}
+                </div>
               </div>
             </div>
 
-            <Separator />
-
-            {/* Variants */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-foreground">
-                  Ukuran:
-                </label>
-                <ToggleGroup
-                  type="single"
-                  value={selectedSize}
-                  onValueChange={(val) => val && setSelectedSize(val)}
-                  className="justify-start"
-                >
-                  {product.sizes.map((size) => (
-                    <ToggleGroupItem
-                      key={size}
-                      value={size}
-                      className="h-10 w-10 rounded-lg border border-input data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
-                    >
-                      {size}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-            )}
-
-            {/* Description */}
-            <div className="space-y-4">
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description}
-              </p>
-
-              {product.specs && (
-                <div className="bg-muted/50 rounded-xl p-4 text-sm space-y-2">
-                  <p className="font-semibold mb-2">Spesifikasi:</p>
-                  <ul className="space-y-1 text-muted-foreground">
-                    {product.specs.map((spec, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                        {spec}
-                      </li>
+            {/* Selectors */}
+            <div className="space-y-6">
+              {product.sizes && product.sizes.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="uppercase font-bold text-xs tracking-widest text-zinc-500">
+                    Pilih Ukuran
+                  </Label>
+                  <div className="flex flex-wrap gap-3">
+                    {product.sizes.map((size) => (
+                      <div key={size} className="relative">
+                        <input
+                          type="radio"
+                          name="size"
+                          id={`size-${size}`}
+                          value={size}
+                          checked={selectedSize === size}
+                          onChange={(e) => setSelectedSize(e.target.value)}
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor={`size-${size}`}
+                          className="flex h-12 w-12 items-center justify-center rounded-none border-2 border-zinc-200 bg-white font-bold text-lg cursor-pointer transition-all peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white peer-checked:shadow-lg peer-hover:border-zinc-400"
+                        >
+                          {size}
+                        </Label>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
+
+              <div className="space-y-3">
+                <Label className="uppercase font-bold text-xs tracking-widest text-zinc-500">
+                  Jumlah
+                </Label>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center border-2 border-zinc-200 bg-white">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-12 w-12 rounded-none hover:bg-zinc-100 hover:text-primary"
+                      onClick={() => handleQuantityChange("dec")}
+                      disabled={quantity <= 1}
+                    >
+                      <Minus className="w-5 h-5" />
+                    </Button>
+                    <div className="h-12 w-16 flex items-center justify-center border-x-2 border-zinc-200 font-black text-xl">
+                      {quantity}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-12 w-12 rounded-none hover:bg-zinc-100 hover:text-primary"
+                      onClick={() => handleQuantityChange("inc")}
+                      disabled={quantity >= product.stock}
+                    >
+                      <Plus className="w-5 h-5" />
+                    </Button>
+                  </div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Sisa stok: {product.stock}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-col gap-3 pt-4">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button
                 size="lg"
-                className="w-full text-base h-12 gap-2"
-                onClick={handleWhatsAppBuy}
+                className="flex-1 h-14 text-lg font-black uppercase tracking-widest skew-x-[-10deg] shadow-lg shadow-primary/20 rounded-none transform hover:-translate-y-1 transition-all"
+                disabled={product.stock === 0}
               >
-                <MessageCircle className="w-5 h-5" />
-                Beli via WhatsApp
+                <span className="skew-x-10 flex items-center justify-center gap-3">
+                  <ShoppingCart className="w-5 h-5" />
+                  Beli Sekarang
+                </span>
               </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                Admin akan membantu proses pemesanan & cek ongkir.
-              </p>
+              <Button
+                variant="outline"
+                size="lg"
+                className="flex-1 h-14 text-lg font-bold uppercase tracking-widest rounded-none border-2 border-zinc-200 hover:border-primary hover:text-primary hover:bg-zinc-50"
+              >
+                + Keranjang
+              </Button>
             </div>
 
-            {/* Features / Trust */}
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/20 text-green-600 flex items-center justify-center shrink-0">
-                  <Check className="w-5 h-5" />
-                </div>
-                <div className="text-xs">
-                  <p className="font-semibold text-foreground">
-                    Official Merch
-                  </p>
-                  <p className="text-muted-foreground">100% Asli PUSAMADA</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center shrink-0">
-                  <Truck className="w-5 h-5" />
-                </div>
-                <div className="text-xs">
-                  <p className="font-semibold text-foreground">
-                    Kirim Seluruh Indo
-                  </p>
-                  <p className="text-muted-foreground">Via JNE / J&T</p>
-                </div>
-              </div>
+            {/* Info Tabs */}
+            <div className="pt-8">
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full"
+                defaultValue="deskripsi"
+              >
+                <AccordionItem
+                  value="deskripsi"
+                  className="border-b-2 border-zinc-100"
+                >
+                  <AccordionTrigger className="text-lg font-bold uppercase tracking-wide hover:text-primary hover:no-underline py-4">
+                    Deskripsi Produk
+                  </AccordionTrigger>
+                  <AccordionContent className="prose prose-zinc dark:prose-invert text-muted-foreground leading-relaxed">
+                    <div
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem
+                  value="spesifikasi"
+                  className="border-b-2 border-zinc-100"
+                >
+                  <AccordionTrigger className="text-lg font-bold uppercase tracking-wide hover:text-primary hover:no-underline py-4">
+                    Spesifikasi
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="grid grid-cols-1 gap-y-3">
+                      {product.specs.map((spec, idx) => (
+                        <div
+                          key={idx}
+                          className="grid grid-cols-3 gap-4 py-2 border-b border-dashed border-zinc-200 last:border-0"
+                        >
+                          <span className="font-bold text-zinc-500 uppercase text-xs tracking-wider flex items-center">
+                            {spec.label}
+                          </span>
+                          <span className="col-span-2 font-medium text-foreground">
+                            {spec.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem
+                  value="pengiriman"
+                  className="border-b-2 border-zinc-100"
+                >
+                  <AccordionTrigger className="text-lg font-bold uppercase tracking-wide hover:text-primary hover:no-underline py-4">
+                    Pengiriman & Garansi
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <Truck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold text-sm mb-1">
+                          Pengiriman Cepat
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Dikirim dari Bandung. Estimasi 2-3 hari kerja untuk
+                          Pulau Jawa.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold text-sm mb-1">Garansi Produk</p>
+                        <p className="text-sm text-muted-foreground">
+                          Garansi retur 7 hari jika terdapat cacat produksi atau
+                          ukuran tidak sesuai.
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </div>
         </div>

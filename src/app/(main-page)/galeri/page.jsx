@@ -134,31 +134,40 @@ const GaleriPage = () => {
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              className="group relative aspect-4/3 rounded-none border-2 border-border bg-card overflow-hidden cursor-pointer hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl"
+              className="group rounded-none border-2 border-border bg-card overflow-hidden cursor-pointer hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl"
               onClick={() => setSelectedImage(item)}
             >
-              <div className="absolute inset-0 bg-muted/20" />{" "}
-              {/* Placeholder BG */}
-              <Image
-                src={item.src}
-                alt={item.title}
-                fill
-                className="object-contain p-8 group-hover:scale-110 transition-transform duration-700"
-              />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white">
-                <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                  <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest bg-primary text-primary-foreground rounded-none skew-x-[-10deg] mb-3">
+              <div className="relative aspect-4/3 overflow-hidden bg-muted/20">
+                <Image
+                  src={item.src}
+                  alt={item.title}
+                  fill
+                  className="object-contain p-8 group-hover:scale-110 transition-transform duration-700"
+                />
+                {/* Overlay Icon Only */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="bg-primary/90 text-primary-foreground p-3 rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-100">
+                    <ZoomIn className="w-6 h-6" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Content - Always Visible */}
+              <div className="p-5 border-t-2 border-border bg-background relative">
+                <div className="absolute top-0 right-0 w-8 h-8 bg-border skew-x-[-10deg] -mt-4 mr-4 hidden md:block"></div>
+
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 rounded-none skew-x-[-10deg]">
                     <span className="skew-x-10">{item.category}</span>
                   </span>
-                  <h3 className="font-black text-xl leading-tight mb-2 uppercase italic">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-gray-300">{item.date}</p>
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {item.date}
+                  </span>
                 </div>
-                <div className="absolute top-4 right-4 bg-primary/20 border border-primary text-primary p-2 rounded-none backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity delay-100">
-                  <ZoomIn className="w-5 h-5" />
-                </div>
+
+                <h3 className="font-black text-xl leading-tight uppercase italic text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                  {item.title}
+                </h3>
               </div>
             </div>
           ))}
