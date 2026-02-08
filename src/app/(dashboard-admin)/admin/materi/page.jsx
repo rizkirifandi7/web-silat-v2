@@ -6,4 +6,4 @@ const PageMateri = () => {
   )
 }
 
-export default PageMateri
+export default PageMateri 

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import Image from "next/image";
 
-export function LoginForm({ className, ...props }) {
+export function RegisterForm({ className, ...props }) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
@@ -22,14 +22,29 @@ export function LoginForm({ className, ...props }) {
           <span className="sr-only">PUSAMADA</span>
         </Link>
         <h1 className="text-3xl font-black uppercase italic tracking-tight">
-          Selamat Datang
+          Buat Akun Baru
         </h1>
         <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-          Masuk untuk mengakses dashboard anggota dan layanan PUSAMADA.
+          Bergabunglah dengan keluarga besar PUSAMADA dan mulai perjalananmu.
         </p>
       </div>
 
       <form className="space-y-4">
+        <div className="space-y-2">
+          <Label
+            htmlFor="name"
+            className="uppercase font-bold text-xs tracking-widest text-primary"
+          >
+            Nama Lengkap
+          </Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Nama Lengkap Anda"
+            required
+            className="rounded-none border-2 border-zinc-200 focus-visible:ring-0 focus-visible:border-primary transition-colors h-11 bg-muted/30"
+          />
+        </div>
         <div className="space-y-2">
           <Label
             htmlFor="email"
@@ -46,22 +61,29 @@ export function LoginForm({ className, ...props }) {
           />
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label
-              htmlFor="password"
-              className="uppercase font-bold text-xs tracking-widest text-primary"
-            >
-              Password
-            </Label>
-            <Link
-              href="#"
-              className="text-xs text-muted-foreground hover:text-primary transition-colors hover:underline"
-            >
-              Lupa password?
-            </Link>
-          </div>
+          <Label
+            htmlFor="password"
+            className="uppercase font-bold text-xs tracking-widest text-primary"
+          >
+            Password
+          </Label>
           <Input
             id="password"
+            type="password"
+            placeholder="••••••••"
+            required
+            className="rounded-none border-2 border-zinc-200 focus-visible:ring-0 focus-visible:border-primary transition-colors h-11 bg-muted/30"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label
+            htmlFor="confirm-password"
+            className="uppercase font-bold text-xs tracking-widest text-primary"
+          >
+            Konfirmasi Password
+          </Label>
+          <Input
+            id="confirm-password"
             type="password"
             placeholder="••••••••"
             required
@@ -72,7 +94,7 @@ export function LoginForm({ className, ...props }) {
           type="submit"
           className="w-full rounded-none h-12 text-base font-black uppercase tracking-widest skew-x-[-10deg] hover:bg-zinc-900 transition-all border-2 border-transparent hover:border-primary"
         >
-          <span className="skew-x-10">Masuk</span>
+          <span className="skew-x-10">Daftar</span>
         </Button>
       </form>
 
@@ -86,12 +108,12 @@ export function LoginForm({ className, ...props }) {
       </div>
 
       <div className="text-center text-sm">
-        Belum punya akun?{" "}
+        Sudah punya akun?{" "}
         <Link
-          href="/register"
+          href="/login"
           className="font-bold text-primary hover:underline hover:text-primary/80 transition-colors uppercase tracking-wide"
         >
-          Daftar Sekarang
+          Masuk Sekarang
         </Link>
       </div>
     </div>

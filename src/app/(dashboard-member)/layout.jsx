@@ -1,14 +1,14 @@
 import React from "react";
-import { SidebarAdmin } from "@/components/layout/Sidebar/SidebarAdmin";
-import { SiteHeaderAdmin } from "@/components/layout/Sidebar/SiteHeaderAdmin";
+import { SidebarMember } from "@/components/layout/Sidebar/SidebarMember";
+import { SiteHeaderMember } from "@/components/layout/Sidebar/SiteHeaderMember";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const metadata = {
-  title: "Admin Dashboard - PUSAMADA",
-  description: "Admin Management PUSAMADA",
+  title: "Member Dashboard - PUSAMADA",
+  description: "Member Area PUSAMADA",
 };
 
-const LayoutAdmin = ({ children }) => {
+const LayoutMember = ({ children }) => {
   return (
     <SidebarProvider
       style={{
@@ -16,13 +16,13 @@ const LayoutAdmin = ({ children }) => {
         "--header-height": "calc(var(--spacing) * 12)",
       }}
     >
-      <SidebarAdmin variant="inset" />
+      <SidebarMember variant="inset" />
       <SidebarInset>
-        <SiteHeaderAdmin />
+        <SiteHeaderMember />
         <div className="flex flex-1 flex-col p-8">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
 };
 
-export default LayoutAdmin;
+export default LayoutMember;
