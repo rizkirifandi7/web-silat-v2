@@ -1,9 +1,9 @@
 "use client";
 
-import {
-  IconLogout,
-  IconUserCircle,
-} from "@tabler/icons-react";
+import { IconLogout, IconUserCircle } from "@tabler/icons-react";
+
+import { useRouter } from "next/navigation";
+import useAuthStore from "@/store/useAuthStore";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -24,6 +24,13 @@ import {
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
+  const logout = useAuthStore((state) => state.logout);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   return (
     <SidebarMenu>
@@ -41,7 +48,9 @@ export function NavUser({ user }) {
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium capitalize">{user.name}</span>
+                <span className="truncate font-medium capitalize">
+                  {user.name}
+                </span>
                 <span className="text-muted-foreground truncate text-[10px]">
                   {user.email}
                 </span>
@@ -76,7 +85,7 @@ export function NavUser({ user }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

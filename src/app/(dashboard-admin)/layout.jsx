@@ -1,7 +1,7 @@
 import React from "react";
 import { SidebarAdmin } from "@/components/layout/Sidebar/SidebarAdmin";
-import { SiteHeaderAdmin } from "@/components/layout/Sidebar/SiteHeaderAdmin";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SiteHeader } from "@/components/layout/Sidebar/SiteHeader";
 
 export const metadata = {
   title: "Admin Dashboard - PUSAMADA",
@@ -18,7 +18,7 @@ const LayoutAdmin = ({ children }) => {
     >
       <SidebarAdmin variant="inset" />
       <SidebarInset>
-        <SiteHeaderAdmin />
+        <SiteHeader />
         <div className="flex flex-1 flex-col p-8">{children}</div>
       </SidebarInset>
     </SidebarProvider>

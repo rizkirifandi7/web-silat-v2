@@ -1,8 +1,9 @@
 import React from 'react'
+import MainGaleri from '@/components/features/Admin/Galeri/MainGaleri'
 
 const PageGaleri = () => {
   return (
-    <div>PageGaleri</div>
+    <MainGaleri/>
   )
 }
 

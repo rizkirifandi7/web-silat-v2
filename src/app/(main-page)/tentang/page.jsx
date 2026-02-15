@@ -1,12 +1,39 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
-import { CheckCircle2, Shield, Target, Award } from "lucide-react";
+import { CheckCircle2, Shield, Target, Award, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getAboutInfo } from "@/lib/api/about";
 
 const TentangPage = () => {
+  const { data: aboutResponse, isLoading } = useQuery({
+    queryKey: ["about"],
+    queryFn: getAboutInfo,
+  });
+
+  const about = aboutResponse?.data?.data || null;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+          <p className="font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
+            Memuat Informasi...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback if no data
+  if (!about) return null;
+
   return (
     <main className="bg-background min-h-screen">
       {/* 1. Page Header */}
-      <section className="relative py-32 overflow-hidden bg-background flex items-center justify-center min-h-[50vh]">
+      <section className="relative pt-32 pb-10 overflow-hidden bg-background flex items-center justify-center min-h-[50vh]">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 -z-20">
           <Image
@@ -73,37 +100,19 @@ const TentangPage = () => {
             </div>
 
             <div className="md:w-2/3 prose prose-lg prose-slate dark:prose-invert max-w-none">
-              <p className="leading-relaxed text-zinc-600 dark:text-zinc-300 mb-6 first-letter:text-5xl first-letter:font-black first-letter:text-primary first-letter:float-left first-letter:mr-3">
-                Pusaka Mande Muda Indonesia (PUSAMADA) didirikan dengan semangat
-                untuk melestarikan dan mengembangkan seni bela diri Pencak
-                Silat, warisan leluhur bangsa Indonesia. Perjalanan kami dimulai
-                dari keinginan luhur untuk tidak hanya mengajarkan teknik bela
-                diri, tetapi juga menanamkan nilai-nilai budi pekerti,
-                kedisiplinan, dan cinta tanah air kepada generasi muda.
-              </p>
-              <p className="leading-relaxed text-zinc-600 dark:text-zinc-300 mb-6">
-                Pada awal pembentukannya, PUSAMADA menghadapi berbagai
-                tantangan. Namun, berkat ketekunan para pendiri dan dukungan
-                masyarakat, perguruan ini tumbuh berkembang. Kami percaya bahwa
-                Pencak Silat bukan sekadar olah tubuh, melainkan olah rasa dan
-                olah jiwa. Setiap gerakan mengandung filosofi yang mendalam
-                tentang keseimbangan hidup, penghormatan kepada sesama, dan
-                pendekatan diri kepada Sang Pencipta.
-              </p>
-              <p className="leading-relaxed text-zinc-600 dark:text-zinc-300 mb-6">
-                Seiring berjalannya waktu, PUSAMADA telah melahirkan banyak
-                pesilat berprestasi yang mengharumkan nama perguruan di berbagai
-                kejuaraan, baik tingkat lokal, nasional, maupun internasional.
-                Lebih dari itu, kami bangga telah menjadi rumah bagi ribuan
-                anggota yang tumbuh menjadi pribadi yang tangguh, berkarakter,
-                dan bermanfaat bagi masyarakat.
-              </p>
-              <div className="bg-primary/5 border-l-4 border-primary p-6 my-8 italic text-foreground font-medium">
-                &quot;Kini, PUSAMADA terus berinovasi tanpa meninggalkan akar
-                tradisi. Kami membuka diri terhadap perkembangan zaman,
-                mengadopsi metode pelatihan modern, namun tetap memegang teguh
-                pakem dan filosofi asli Mande Muda.&quot;
+              <div className="leading-relaxed text-zinc-600 dark:text-zinc-300 mb-6 whitespace-pre-line max-h-200 overflow-y-auto  custom-scrollbar rounded-lg border border-primary/10 p-4 bg-background/60 ">
+                {about.sejarah || "Sejarah belum tersedia."}
               </div>
+              {about.updatedAt && (
+                <div className="bg-primary/5 border-l-4 border-primary p-6 my-8 italic text-foreground font-medium">
+                  Informasi terakhir diperbarui pada{" "}
+                  {new Date(about.updatedAt).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -128,26 +137,37 @@ const TentangPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="group relative">
+            {about.founders?.map((founder) => (
+              <div key={founder.id} className="group relative">
                 <div className="relative aspect-3/4 -skew-x-3 border-2 border-zinc-200 bg-white overflow-hidden mb-6 transition-all duration-300 group-hover:border-primary group-hover:shadow-[8px_8px_0px_0px_var(--color-primary)]">
-                  {/* Placeholder for Founder Image */}
+                  {/* Founder Image */}
                   <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 group-hover:bg-zinc-200 transition-colors">
-                    <Award className="w-16 h-16 text-zinc-400 group-hover:text-primary transition-colors" />
+                    {founder.photoUrl ? (
+                      <Image
+                        src={founder.photoUrl}
+                        alt={founder.nama}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <Award className="w-16 h-16 text-zinc-400 group-hover:text-primary transition-colors" />
+                    )}
                   </div>
                   {/* Overlay Info */}
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                     <p className="text-white text-sm italic">
-                      &quot;Dedikasi tanpa batas untuk seni bela diri.&quot;
+                      &quot;
+                      {founder.description || "Dedikasi untuk Pencak Silat."}
+                      &quot;
                     </p>
                   </div>
                 </div>
                 <div className="text-center">
                   <h3 className="font-black text-xl text-foreground uppercase italic">
-                    Nama Pendiri {item}
+                    {founder.nama}
                   </h3>
                   <p className="text-primary font-bold text-xs uppercase tracking-widest mt-1">
-                    Gelar / Posisi
+                    {founder.title || "Pendiri"}
                   </p>
                 </div>
               </div>
@@ -168,82 +188,48 @@ const TentangPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative">
-            {/* Connecting Lines (Desktop only decoration) */}
-            <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-border -z-10 bg-linear-to-rrom-transparent via-primary/20 to-transparent" />
-
-            {/* Left Column Meanings */}
-            <div className="space-y-12">
-              <div className="flex flex-col md:items-end md:text-right gap-3 group">
-                <div className="p-3 bg-red-500/10 text-red-600 rounded-none skew-x-[-10deg] w-fit border border-red-500/20 group-hover:bg-red-500 group-hover:text-white transition-colors">
-                  <Shield className="w-6 h-6 skew-x-10" />
-                </div>
-                <div>
-                  <h3 className="font-black text-xl bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70 uppercase">
-                    Warna Merah
-                  </h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm mt-1">
-                    Keberanian, semangat juang, dan darah patriot.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col md:items-end md:text-right gap-3 group">
-                <div className="p-3 bg-yellow-500/10 text-yellow-600 rounded-none skew-x-[-10deg] w-fit border border-yellow-500/20 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
-                  <Award className="w-6 h-6 skew-x-10" />
-                </div>
-                <div>
-                  <h3 className="font-black text-xl bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70 uppercase">
-                    Warna Kuning
-                  </h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm mt-1">
-                    Keluhuran budi, kejayaan, dan kebijaksanaan.
-                  </p>
-                </div>
-              </div>
+          <div className="flex flex-col items-center mb-12">
+            <div className="relative w-48 h-48 md:w-64 md:h-64 mb-8">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-[60px] animate-pulse"></div>
+              <Image
+                src={about.logoUrl || "/pusamada-logo.png"}
+                alt="Lambang PUSAMADA"
+                fill
+                className="relative z-10 drop-shadow-2xl object-contain"
+              />
             </div>
+          </div>
 
-            {/* Center Logo */}
-            <div className="relative flex justify-center py-10 md:py-0">
-              <div className="relative w-64 h-64 md:w-80 md:h-80 animate-in zoom-in-50 duration-700">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-[80px] animate-pulse"></div>
-                <Image
-                  src="/pusamada-logo.png"
-                  alt="Lambang PUSAMADA"
-                  width={320}
-                  height={320}
-                  className="relative z-10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            </div>
+          <div className="max-w-4xl mx-auto p-8 border-2 border-dashed border-zinc-200 rounded-none bg-zinc-50/50">
+            <h3 className="font-black text-2xl text-foreground uppercase italic mb-6 text-center">
+              Filosofi <span className="text-primary">Mendalam</span>
+            </h3>
+            <div className="prose prose-slate max-w-none text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed text-center">
+              {(() => {
+                let points = about.filosofiLogo;
+                if (typeof points === "string" && points.startsWith("[")) {
+                  try {
+                    points = JSON.parse(points);
+                  } catch (e) {
+                    // Fallback
+                  }
+                }
 
-            {/* Right Column Meanings */}
-            <div className="space-y-12">
-              <div className="flex flex-col items-start text-left gap-3 group">
-                <div className="p-3 bg-green-500/10 text-green-600 rounded-none skew-x-[-10deg] w-fit border border-green-500/20 group-hover:bg-green-500 group-hover:text-white transition-colors">
-                  <Target className="w-6 h-6 skew-x-10" />
-                </div>
-                <div>
-                  <h3 className="font-black text-xl bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70 uppercase">
-                    Lingkaran
-                  </h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm mt-1">
-                    Persatuan, kesatuan, dan persaudaraan abadi.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col items-start text-left gap-3 group">
-                <div className="p-3 bg-blue-500/10 text-blue-600 rounded-none skew-x-[-10deg] w-fit border border-blue-500/20 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                  <CheckCircle2 className="w-6 h-6 skew-x-10" />
-                </div>
-                <div>
-                  <h3 className="font-black text-xl bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70 uppercase">
-                    Warna Putih
-                  </h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm mt-1">
-                    Kesucian hati, niat tulus, dan kebersihan jiwa.
-                  </p>
-                </div>
-              </div>
+                if (Array.isArray(points)) {
+                  return (
+                    <ul className="list-none p-0 space-y-3 inline-block text-left mx-auto">
+                      {points.map((p, i) => (
+                        <li key={i} className="flex gap-3 items-start">
+                          <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-primary mt-2"></span>
+                          <span>{typeof p === "string" ? p : p.value}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+
+                return points || "Filosofi logo belum ditambahkan.";
+              })()}
             </div>
           </div>
         </div>
@@ -264,14 +250,8 @@ const TentangPage = () => {
                 </span>
                 <div className="absolute bottom-0 left-0 w-full h-1 bg-primary skew-x-[-10deg]" />
               </div>
-              <h2 className="text-4xl font-black text-foreground italic uppercase leading-tight">
-                &quot;Menjadi Pusat Keunggulan Pencak Silat yang Berkarakter dan
-                Mendunia.&quot;
-              </h2>
               <p className="text-muted-foreground text-lg leading-relaxed">
-                Kami bercita-cita untuk tidak hanya mencetak juara di
-                gelanggang, tetapi juga melahirkan pemimpin-pemimpin masa depan
-                yang memiliki integritas dan kecintaan terhadap budaya.
+                &quot;{about.visi || "Visi belum ditambahkan."}&quot;
               </p>
             </div>
 
@@ -282,24 +262,44 @@ const TentangPage = () => {
                   Misi Kami
                 </span>
               </div>
-              <ul className="space-y-6">
-                {[
-                  "Melestarikan dan mengembangkan seni budaya Pencak Silat Mande Muda.",
-                  "Membangun karakter generasi muda yang disiplin, jujur, dan bertanggung jawab.",
-                  "Meningkatkan prestasi olahraga Pencak Silat di tingkat nasional dan internasional.",
-                  "Mempererat tali persaudaraan antar pesilat dan perguruan.",
-                  "Menyebarkan nilai-nilai luhur Pencak Silat ke seluruh lapisan masyarakat.",
-                ].map((item, index) => (
-                  <li key={index} className="flex gap-4 items-start group">
-                    <div className="shrink-0 mt-1 w-6 h-6 rounded-full border border-primary/30 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                      <span className="text-[10px] font-bold">{index + 1}</span>
+              <div className="space-y-6">
+                {(() => {
+                  let missionPoints = about.misi;
+
+                  // If it's a string, try to parse it (it might be stringified JSON array)
+                  if (
+                    typeof missionPoints === "string" &&
+                    missionPoints.startsWith("[")
+                  ) {
+                    try {
+                      missionPoints = JSON.parse(missionPoints);
+                    } catch (e) {
+                      // Fallback to original string if parsing fails
+                    }
+                  }
+
+                  if (Array.isArray(missionPoints)) {
+                    return missionPoints.map((item, index) => (
+                      <div key={index} className="flex gap-4 items-start group">
+                        <div className="shrink-0 mt-1 w-6 h-6 rounded-full border border-primary/30 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                          <span className="text-[10px] font-bold">
+                            {index + 1}
+                          </span>
+                        </div>
+                        <p className="text-zinc-600 group-hover:text-foreground transition-colors">
+                          {typeof item === "string" ? item : item.value}
+                        </p>
+                      </div>
+                    ));
+                  }
+
+                  return (
+                    <div className="prose prose-slate max-w-none text-zinc-600 dark:text-zinc-300 whitespace-pre-line">
+                      {missionPoints || "Misi belum ditambahkan."}
                     </div>
-                    <p className="text-zinc-600 group-hover:text-foreground transition-colors">
-                      {item}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+                  );
+                })()}
+              </div>
             </div>
           </div>
         </div>

@@ -1,11 +1,27 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import Image from "next/image";
+import { useLogin } from "@/hooks/useLogin";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function LoginForm({ className, ...props }) {
+  const { mutate: login, isPending: isLoading, error } = useLogin();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    login({ email, password });
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
@@ -29,7 +45,16 @@ export function LoginForm({ className, ...props }) {
         </p>
       </div>
 
-      <form className="space-y-4">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {error.response?.data?.message || "Login failed"}
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="space-y-2">
           <Label
             htmlFor="email"
@@ -43,6 +68,9 @@ export function LoginForm({ className, ...props }) {
             placeholder="nama@email.com"
             required
             className="rounded-none border-2 border-zinc-200 focus-visible:ring-0 focus-visible:border-primary transition-colors h-11 bg-muted/30"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
           />
         </div>
         <div className="space-y-2">
@@ -66,13 +94,20 @@ export function LoginForm({ className, ...props }) {
             placeholder="••••••••"
             required
             className="rounded-none border-2 border-zinc-200 focus-visible:ring-0 focus-visible:border-primary transition-colors h-11 bg-muted/30"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
           />
         </div>
         <Button
           type="submit"
           className="w-full rounded-none h-12 text-base font-black uppercase tracking-widest skew-x-[-10deg] hover:bg-zinc-900 transition-all border-2 border-transparent hover:border-primary"
+          disabled={isLoading}
         >
-          <span className="skew-x-10">Masuk</span>
+          <span className="skew-x-10 flex items-center justify-center gap-2">
+            {isLoading && <Loader2 className="animate-spin h-4 w-4" />}
+            {isLoading ? "Masuk..." : "Masuk"}
+          </span>
         </Button>
       </form>
 

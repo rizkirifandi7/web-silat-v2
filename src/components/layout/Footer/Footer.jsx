@@ -42,7 +42,7 @@ const Footer = () => {
                 <span className="font-black text-2xl leading-none tracking-tighter text-white uppercase italic">
                   PUSAMADA
                 </span>
-                <span className="text-xs text-primary font-bold tracking-[0.2em] uppercase">
+                <span className="text-xs text-muted-foreground font-bold tracking-[0.2em] uppercase">
                   Indonesia
                 </span>
               </div>

@@ -1,9 +1,8 @@
-import React from 'react'
+import MateriMain from "@/components/features/Member/Materi/MateriMain";
+import React from "react";
 
 const PageMateriAnggota = () => {
-  return (
-    <div>PageMateriAnggota</div>
-  )
-}
+  return <MateriMain />;
+};
 
-export default PageMateriAnggota
+export default PageMateriAnggota;

@@ -1,7 +1,7 @@
 import React from "react";
 import { SidebarMember } from "@/components/layout/Sidebar/SidebarMember";
-import { SiteHeaderMember } from "@/components/layout/Sidebar/SiteHeaderMember";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SiteHeader } from "@/components/layout/Sidebar/SiteHeader";
 
 export const metadata = {
   title: "Member Dashboard - PUSAMADA",
@@ -18,8 +18,8 @@ const LayoutMember = ({ children }) => {
     >
       <SidebarMember variant="inset" />
       <SidebarInset>
-        <SiteHeaderMember />
-        <div className="flex flex-1 flex-col p-8">{children}</div>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

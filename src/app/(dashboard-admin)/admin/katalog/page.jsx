@@ -1,9 +1,8 @@
-import React from 'react'
+import React from "react";
+import MainKatalog from "@/components/features/Admin/Katalog/MainKatalog";
 
 const PageKatalog = () => {
-  return (
-    <div>PageKatalog</div>
-  )
-}
+  return <MainKatalog />;
+};
 
-export default PageKatalog
+export default PageKatalog;

@@ -14,7 +14,14 @@ import {
   User,
   Mail,
   Phone,
+  Loader2,
 } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getEventById } from "@/lib/api/event";
+import useAuthStore from "@/store/useAuthStore";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -26,73 +33,81 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-// Mock Data (Should match the list page or specific detailed data)
-const eventData = {
-  1: {
-    title: "Seminar Pencak Silat Internasional",
-    date: "15 Agustus 2024",
-    time: "08:00 - 16:00 WIB",
-    location: "GOR Pajajaran, Bandung",
-    price: 150000,
-    category: "Seminar",
-    status: "Open Registration",
-    image: "/pusamada-logo.png",
-    description:
-      "Seminar eksklusif ini akan membahas secara mendalam teknik-teknik tingkat lanjut dan filosofi yang terkandung dalam Pencak Silat. Dipandu langsung oleh para pendekar internasional yang telah berpengalaman puluhan tahun.",
-    itinerary: [
-      { time: "08:00 - 08:30", activity: "Registrasi Ulang" },
-      { time: "08:30 - 09:00", activity: "Opening Ceremony" },
-      { time: "09:00 - 10:30", activity: "Sesi 1: Filosofi Gerak" },
-      { time: "10:30 - 10:45", activity: "Coffee Break" },
-      { time: "10:45 - 12:00", activity: "Sesi 2: Teknik Bantingan" },
-      { time: "12:00 - 13:00", activity: "Ishoma" },
-      { time: "13:00 - 15:30", activity: "Sesi 3: Aplikasi Bela Diri Praktis" },
-      { time: "15:30 - 16:00", activity: "Penutupan & Foto Bersama" },
-    ],
-    speakers: [
-      "Pendekar A (Belanda)",
-      "Pendekar B (Indonesia)",
-      "Pendekar C (USA)",
-    ],
-  },
-  // Fallback for other IDs for demo purposes
-  default: {
-    title: "Event Tidak Ditemukan",
-    date: "-",
-    time: "-",
-    location: "-",
-    price: 0,
-    category: "-",
-    status: "Closed",
-    image: "/pusamada-logo.png",
-    description: "Mohon maaf, detail event ini tidak tersedia saat ini.",
-    itinerary: [],
-    speakers: [],
-  },
-};
+// Mock data removed, fetching from API
 
 const EventDetailPage = () => {
   const params = useParams();
   const id = params?.id;
+  const user = useAuthStore((state) => state.user);
 
-  // Simple logic to select data
-  const event =
-    eventData[id] || (Number(id) > 1 ? eventData[1] : eventData.default);
+  const { data: eventResponse, isLoading } = useQuery({
+    queryKey: ["event", id],
+    queryFn: () => getEventById(id),
+    enabled: !!id,
+  });
+
+  const event = eventResponse?.data?.data || null;
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
-  // Mock submit handler
+  const mutation = useMutation({
+    mutationFn: (data) => api.post("/registrations", data),
+    onSuccess: (res) => {
+      // Jika event berbayar dan butuh pembayaran, jangan langsung sukses, tampilkan UI pembayaran
+      if (res?.data?.requiresPayment) {
+        toast.info("Ini adalah event berbayar. Silakan lakukan pembayaran.");
+        setIsRegisterOpen(true);
+      } else if (res?.data?.success) {
+        toast.success("Pendaftaran berhasil!");
+        setIsRegisterOpen(true);
+      } else {
+        toast.error(res?.data?.message || "Gagal mendaftar event.");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Gagal mendaftar event.");
+    },
+  });
+
   const handleRegister = (e) => {
     e.preventDefault();
-    // Simulate API call
-    setTimeout(() => {
-      setIsSuccess(true);
-    }, 1000);
+    if (!user) {
+      toast.error("Silakan login terlebih dahulu untuk mendaftar.");
+      return;
+    }
+    mutation.mutate({
+      eventId: id,
+      userId: user.id,
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+          <p className="font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
+            Memuat Event...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h2 className="text-2xl font-black uppercase italic mb-4">
+            Event Tidak Ditemukan
+          </h2>
+          <Button asChild>
+            <Link href="/events">Kembali ke Agenda</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -129,12 +144,25 @@ const EventDetailPage = () => {
               <div className="flex flex-wrap gap-6 text-zinc-300 font-medium">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-primary" />
-                  <span>{event.date}</span>
+                  <span>
+                    {new Date(event.eventDate).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" />
-                  <span>{event.time}</span>
+                  <span>
+                    {new Date(event.eventDate).toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}{" "}
+                    WIB
+                  </span>
                 </div>
+
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-primary" />
                   <span>{event.location}</span>
@@ -152,11 +180,12 @@ const EventDetailPage = () => {
             {/* Hero Image */}
             <div className="relative aspect-video rounded-none -skew-x-2 border-4 border-white shadow-2xl overflow-hidden bg-zinc-100">
               <Image
-                src={event.image}
+                src={event.imageUrl || "/pusamada-logo.png"}
                 alt={event.title}
                 fill
-                className="object-contain p-12 bg-white"
+                className="object-cover bg-white"
               />
+
               <div className="absolute inset-0 ring-1 ring-inset ring-black/10" />
             </div>
 
@@ -246,12 +275,16 @@ const EventDetailPage = () => {
                     size="lg"
                     className="w-full h-12 text-base font-black uppercase tracking-widest skew-x-[-10deg] shadow-lg shadow-primary/20 rounded-none"
                     onClick={() => setIsRegisterOpen(true)}
-                    disabled={event.status === "Closed"}
+                    disabled={
+                      event.status !== "published" || mutation.isSuccess
+                    }
                   >
                     <span className="skew-x-10">
-                      {event.status === "Closed"
+                      {event.status !== "published"
                         ? "Pendaftaran Ditutup"
-                        : "Daftar Sekarang"}
+                        : mutation.isSuccess
+                          ? "Sudah Terdaftar"
+                          : "Daftar Sekarang"}
                     </span>
                   </Button>
                   <Button
@@ -311,127 +344,123 @@ const EventDetailPage = () => {
       {/* Registration Dialog */}
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-none border-2 border-zinc-200">
-          {!isSuccess ? (
+          {/* Jika pendaftaran sukses dan tidak butuh pembayaran, atau dialog konfirmasi awal */}
+          {!mutation.isSuccess ||
+          (mutation.data &&
+            mutation.data.data &&
+            mutation.data.data.requiresPayment) ? (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-black uppercase italic tracking-tight">
-                  Formulir Pendaftaran
-                </DialogTitle>
-                <DialogDescription>
-                  Lengkapi data diri Anda untuk mendaftar pada event{" "}
-                  <strong>{event.title}</strong>.
-                </DialogDescription>
-              </DialogHeader>
-
-              <form onSubmit={handleRegister} className="space-y-5 py-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="name"
-                    className="uppercase font-bold text-xs tracking-widest text-primary"
-                  >
-                    Nama Lengkap
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="name"
-                      placeholder="Sesuai KTP/Kartu Pelajar"
-                      className="pl-9 rounded-none border-2 h-11 bg-muted/20 focus-visible:ring-0 focus-visible:border-primary"
-                      required
-                    />
+              {/* Jika sudah submit dan butuh pembayaran, tampilkan UI pembayaran */}
+              {mutation.data &&
+              mutation.data.data &&
+              mutation.data.data.requiresPayment ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
+                  <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-4 border-2 border-yellow-600">
+                    <Loader2 className="w-8 h-8 animate-pulse" />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="email"
-                    className="uppercase font-bold text-xs tracking-widest text-primary"
-                  >
-                    Email
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="email@contoh.com"
-                      className="pl-9 rounded-none border-2 h-11 bg-muted/20 focus-visible:ring-0 focus-visible:border-primary"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="phone"
-                    className="uppercase font-bold text-xs tracking-widest text-primary"
-                  >
-                    No. WhatsApp
-                  </Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="0812xxxx"
-                      className="pl-9 rounded-none border-2 h-11 bg-muted/20 focus-visible:ring-0 focus-visible:border-primary"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="uppercase font-bold text-xs tracking-widest text-primary">
-                    Kategori Peserta
-                  </Label>
-                  <RadioGroup defaultValue="umum">
-                    <div className="flex items-center space-x-2 border p-3 rounded-none hover:bg-muted/20 transition-colors cursor-pointer">
-                      <RadioGroupItem value="umum" id="r1" />
-                      <Label
-                        htmlFor="r1"
-                        className="cursor-pointer font-medium"
-                      >
-                        Umum
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 border p-3 rounded-none hover:bg-muted/20 transition-colors cursor-pointer">
-                      <RadioGroupItem value="member" id="r2" />
-                      <Label
-                        htmlFor="r2"
-                        className="cursor-pointer font-medium"
-                      >
-                        Anggota PUSAMADA
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <DialogFooter className="pt-4">
+                  <DialogTitle className="text-2xl font-black uppercase italic">
+                    Pembayaran Diperlukan
+                  </DialogTitle>
+                  <DialogDescription className="text-center max-w-xs mx-auto">
+                    {mutation.data.data.message ||
+                      "Ini adalah event berbayar. Silakan lakukan pembayaran untuk melanjutkan."}
+                  </DialogDescription>
+                  {/* Tombol bayar, bisa diarahkan ke payment gateway atau popup pembayaran */}
                   <Button
-                    type="submit"
-                    className="w-full rounded-none font-bold uppercase tracking-widest h-11"
+                    className="mt-4 rounded-none font-bold uppercase"
+                    onClick={() => {
+                      // TODO: Integrasi dengan payment gateway, misal redirect ke halaman pembayaran
+                      window.location.href = `/payment?eventId=${id}`;
+                    }}
                   >
-                    Konfirmasi Pendaftaran
+                    Bayar Sekarang
                   </Button>
-                </DialogFooter>
-              </form>
+                  <Button
+                    variant="outline"
+                    className="mt-2 rounded-none font-bold uppercase"
+                    onClick={() => setIsRegisterOpen(false)}
+                  >
+                    Batal
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-black uppercase italic tracking-tight">
+                      Konfirmasi Pendaftaran
+                    </DialogTitle>
+                    <DialogDescription>
+                      Klik tombol di bawah untuk mendaftar pada event{" "}
+                      <strong>{event.title}</strong>.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="py-6 space-y-4">
+                    {!user ? (
+                      <div className="bg-amber-50 border-2 border-amber-200 p-4 text-amber-800 text-sm font-medium">
+                        Anda perlu login terlebih dahulu untuk mendaftar event
+                        ini.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm py-2 border-b">
+                          <span className="text-muted-foreground uppercase font-bold text-xs tracking-widest">
+                            Nama
+                          </span>
+                          <span className="font-bold">{user.nama}</span>
+                        </div>
+                        <div className="flex justify-between text-sm py-2 border-b">
+                          <span className="text-muted-foreground uppercase font-bold text-xs tracking-widest">
+                            Email
+                          </span>
+                          <span className="font-bold">{user.email}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <DialogFooter>
+                    {!user ? (
+                      <Button
+                        asChild
+                        className="w-full rounded-none font-bold uppercase tracking-widest h-11"
+                      >
+                        <Link href="/login">Ke Halaman Login</Link>
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleRegister}
+                        disabled={mutation.isPending}
+                        className="w-full rounded-none font-bold uppercase tracking-widest h-11"
+                      >
+                        {mutation.isPending ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          "Konfirmasi Pendaftaran"
+                        )}
+                      </Button>
+                    )}
+                  </DialogFooter>
+                </>
+              )}
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
-              <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary">
+              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4 border-2 border-green-600">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <DialogTitle className="text-2xl font-black uppercase italic">
                 Pendaftaran Berhasil!
               </DialogTitle>
               <DialogDescription className="text-center max-w-xs mx-auto">
-                Terima kasih telah mendaftar. Detail pembayaran dan info
-                selanjutnya telah dikirim ke email Anda.
+                Terima kasih telah mendaftar.{" "}
+                {event.isFree
+                  ? "Pendaftaran Anda telah kami terima."
+                  : "Silakan selesaikan pembayaran Anda untuk mengonfirmasi kehadiran."}
               </DialogDescription>
               <Button
                 onClick={() => {
                   setIsRegisterOpen(false);
-                  setIsSuccess(false);
                 }}
                 className="mt-4 rounded-none font-bold uppercase"
               >

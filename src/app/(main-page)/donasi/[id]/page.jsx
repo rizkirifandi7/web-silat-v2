@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -13,7 +14,13 @@ import {
   Shield,
   Clock,
   Wallet,
+  Loader2,
 } from "lucide-react";
+import Script from "next/script";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getCampaignById, submitDonation } from "@/lib/api/donasi";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -30,51 +37,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-// Mock Data
-const campaignData = {
-  1: {
-    title: "Renovasi Padepokan Pusat",
-    category: "Infrastruktur",
-    target: 500000000,
-    collected: 175000000,
-    donorCount: 124,
-    daysLeft: 45,
-    image: "/pusamada-logo.png",
-    description:
-      "Padepokan Pusat PUSAMADA telah menjadi saksi bisu lahirnya ribuan pesilat tangguh. Namun, kondisi bangunan yang sudah tua memerlukan peremajaan agar tetap aman dan nyaman digunakan.",
-    story: `
-      <p>Padepokan Pusat PUSAMADA adalah jantung dari kegiatan perguruan kami. Di sinilah nilai-nilai luhur dan teknik bela diri diwariskan dari generasi ke generasi. Namun, seiring berjalannya waktu, beberapa bagian bangunan mengalami kerusakan yang cukup signifikan.</p>
-      <br/>
-      <p>Atap aula latihan mulai bocor saat hujan deras, lantai kayu yang mulai lapuk membahayakan keselamatan siswa, dan fasilitas sanitasi yang perlu perbaikan mendesak. Kami mengajak Anda, para alumni, anggota, dan simpatisan PUSAMADA untuk bahu-membahu dalam proyek renovasi ini.</p>
-      <br/>
-      <p>Dana yang terkumpul akan digunakan sepenuhnya untuk:</p>
-      <ul class="list-disc pl-5 mt-2 space-y-1">
-        <li>Perbaikan struktur atap dan plafon aula utama.</li>
-        <li>Penggantian lantai latihan dengan standar keamanan yang lebih baik.</li>
-        <li>Renovasi toilet dan ruang ganti siswa.</li>
-        <li>Pengecatan ulang seluruh gedung.</li>
-      </ul>
-    `,
-    donors: [
-      { name: "Hamba Allah", amount: 1000000, time: "2 jam yang lalu" },
-      { name: "Budi Santoso", amount: 500000, time: "5 jam yang lalu" },
-      { name: "Alumni Angkatan 98", amount: 5000000, time: "1 hari yang lalu" },
-    ],
-  },
-  default: {
-    title: "Program Donasi PUSAMADA",
-    category: "Umum",
-    target: 100000000,
-    collected: 0,
-    donorCount: 0,
-    daysLeft: 0,
-    image: "/pusamada-logo.png",
-    description:
-      "Dukung program-program PUSAMADA untuk kemajuan Pencak Silat Indonesia.",
-    story: "<p>Detail campaign belum tersedia.</p>",
-    donors: [],
-  },
-};
+// Mock data removed, fetching from API
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("id-ID", {
@@ -89,14 +52,68 @@ const presetAmounts = [20000, 50000, 100000, 200000, 500000, 1000000];
 const DonasiDetailPage = () => {
   const params = useParams();
   const id = params?.id;
-  const campaign =
-    campaignData[id] ||
-    (Number(id) > 1 ? campaignData[1] : campaignData.default);
-  const progress = Math.min((campaign.collected / campaign.target) * 100, 100);
+
+  const { data: campaignResponse, isLoading } = useQuery({
+    queryKey: ["campaign", id],
+    queryFn: () => getCampaignById(id),
+    enabled: !!id,
+  });
+
+  const campaign = campaignResponse?.data?.data || null;
+  const progress = campaign ? campaign.percentageReached || 0 : 0;
 
   const [donationAmount, setDonationAmount] = useState("");
+  const [formData, setFormData] = useState({
+    donorName: "",
+    donorEmail: "",
+    message: "",
+  });
   const [isDonateOpen, setIsDonateOpen] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+
+  
+
+  const mutation = useMutation({
+    mutationFn: submitDonation,
+    onSuccess: (response) => {
+      const { midtransToken } = response.data.data;
+      if (window.snap) {
+        setIsDonateOpen(false);
+        window.snap.pay(midtransToken, {
+          onSuccess: (result) => {
+            toast.success("Donasi berhasil! Terima kasih atas dukungan Anda.");
+          },
+          onPending: (result) => {
+            toast.info(
+              "Pembayaran tertunda. Silakan selesaikan pembayaran Anda.",
+            );
+          },
+          onError: (result) => {
+            toast.error("Pembayaran gagal. Silakan coba lagi.");
+          },
+          onClose: () => {
+            toast.warning("Anda menutup jendela pembayaran sebelum selesai.");
+          },
+        });
+      } else {
+        toast.error(
+          "Sistem pembayaran sedang tidak tersedia. Mohon segarkan halaman ini.",
+        );
+      }
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message ||
+          "Terjadi kesalahan saat memproses donasi.",
+      );
+    },
+  });
+
+  // Reset mutation state when dialog is opened
+useEffect(() => {
+  if (isDonateOpen && mutation.isSuccess) {
+    mutation.reset();
+  }
+}, [isDonateOpen]);
 
   // Quick preset handler
   const handlePresetClick = (amount) => {
@@ -105,13 +122,49 @@ const DonasiDetailPage = () => {
 
   const handleDonate = (e) => {
     e.preventDefault();
-    setTimeout(() => {
-      setIsSuccess(true);
-    }, 1000);
+    mutation.mutate({
+      campaignId: id,
+      amount: donationAmount,
+      ...formData,
+      paymentMethod: "midtrans", // Default according to backend
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+          <p className="font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
+            Memuat Campaign...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h2 className="text-2xl font-black uppercase italic mb-4">
+            Campaign Tidak Ditemukan
+          </h2>
+          <Button asChild>
+            <Link href="/donasi">Kembali ke Daftar Donasi</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background pb-20">
+      <Script
+        src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+      />
+
       {/* 1. Header Section */}
       <section className="relative py-20 overflow-hidden bg-zinc-900">
         <div className="absolute inset-0 z-0">
@@ -141,10 +194,17 @@ const DonasiDetailPage = () => {
                 <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 text-sm px-3 py-1 rounded-none skew-x-[-10deg]">
                   <span className="skew-x-10">{campaign.category}</span>
                 </Badge>
-                <span className="flex items-center text-sm text-zinc-300 font-medium bg-zinc-800/50 px-3 py-1 rounded-none border border-zinc-700">
-                  <Clock className="w-4 h-4 mr-2 text-primary" />
-                  {campaign.daysLeft} hari tersisa
-                </span>
+                {campaign.status === "completed" ||
+                (campaign.daysLeft !== null && campaign.daysLeft < 0) ? (
+                  <Badge className="bg-red-600 text-white hover:bg-red-700 text-sm px-3 py-1 rounded-none skew-x-[-10deg]">
+                    <span className="skew-x-10">Selesai</span>
+                  </Badge>
+                ) : (
+                  <span className="flex items-center text-sm text-zinc-300 font-medium bg-zinc-800/50 px-3 py-1 rounded-none border border-zinc-700">
+                    <Clock className="w-4 h-4 mr-2 text-primary" />
+                    {campaign.daysLeft || 0} hari tersisa
+                  </span>
+                )}
               </div>
               <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase italic mb-4 drop-shadow-xl leading-none">
                 {campaign.title}
@@ -161,11 +221,12 @@ const DonasiDetailPage = () => {
             {/* Hero Image */}
             <div className="relative aspect-video rounded-none -skew-x-2 border-4 border-white shadow-2xl overflow-hidden bg-zinc-100">
               <Image
-                src={campaign.image}
+                src={campaign.imageUrl || "/pusamada-logo.png"}
                 alt={campaign.title}
                 fill
-                className="object-contain p-12 bg-white"
+                className="object-cover bg-center bg-white"
               />
+
               <div className="absolute inset-0 ring-1 ring-inset ring-black/10" />
             </div>
 
@@ -182,7 +243,7 @@ const DonasiDetailPage = () => {
                   value="donatur"
                   className="rounded-none py-3 px-8 text-lg font-bold uppercase tracking-wide data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-primary -mb-[2px] transition-all"
                 >
-                  Donatur ({campaign.donorCount})
+                  Donatur ({campaign.donations?.length || 0})
                 </TabsTrigger>
               </TabsList>
 
@@ -192,7 +253,7 @@ const DonasiDetailPage = () => {
               >
                 <div
                   className="prose prose-lg prose-zinc dark:prose-invert max-w-none text-muted-foreground leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: campaign.story }}
+                  dangerouslySetInnerHTML={{ __html: campaign.description }}
                 />
               </TabsContent>
 
@@ -201,7 +262,7 @@ const DonasiDetailPage = () => {
                 className="mt-6 animate-in fade-in slide-in-from-top-2"
               >
                 <div className="space-y-4">
-                  {campaign.donors.map((donor, idx) => (
+                  {(campaign.donations || []).map((donor, idx) => (
                     <div
                       key={idx}
                       className="flex items-center justify-between p-5 bg-white border-2 border-zinc-100 hover:border-primary/50 transition-colors shadow-sm"
@@ -212,10 +273,19 @@ const DonasiDetailPage = () => {
                         </div>
                         <div>
                           <p className="font-bold text-lg text-foreground uppercase tracking-tight">
-                            {donor.name}
+                            {donor.isAnonymous
+                              ? "Hamba Allah"
+                              : donor.donorName}
                           </p>
                           <p className="text-xs text-muted-foreground font-medium">
-                            {donor.time}
+                            {new Date(donor.paidAt).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              },
+                            )}
                           </p>
                         </div>
                       </div>
@@ -224,7 +294,7 @@ const DonasiDetailPage = () => {
                       </span>
                     </div>
                   ))}
-                  {campaign.donors.length === 0 && (
+                  {(!campaign.donations || campaign.donations.length === 0) && (
                     <div className="text-center py-12 bg-muted/30 border-2 border-dashed border-zinc-300 rounded-lg">
                       <Heart className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
                       <p className="text-muted-foreground font-medium">
@@ -252,7 +322,7 @@ const DonasiDetailPage = () => {
                     </p>
                     <div className="flex justify-between items-baseline">
                       <span className="text-4xl font-black text-primary tracking-tight">
-                        {formatCurrency(campaign.collected)}
+                        {formatCurrency(campaign.currentAmount)}
                       </span>
                     </div>
                   </div>
@@ -263,7 +333,9 @@ const DonasiDetailPage = () => {
                     />
                     <div className="flex justify-between text-xs font-bold text-zinc-500 uppercase">
                       <span>{Math.round(progress)}% tercapai</span>
-                      <span>Target: {formatCurrency(campaign.target)}</span>
+                      <span>
+                        Target: {formatCurrency(campaign.targetAmount)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -346,18 +418,13 @@ const DonasiDetailPage = () => {
       {/* Donation Flow Dialog */}
       <Dialog open={isDonateOpen} onOpenChange={setIsDonateOpen}>
         <DialogContent className="sm:max-w-[450px] rounded-none border-2 border-zinc-200">
-          {!isSuccess ? (
+          {!mutation.isSuccess ? (
             <>
               <DialogHeader>
                 <DialogTitle className="text-2xl font-black uppercase italic tracking-tight">
                   Lengkapi Data Donasi
                 </DialogTitle>
-                <DialogDescription>
-                  Anda akan berdonasi sebesar{" "}
-                  <strong className="text-primary text-lg">
-                    {formatCurrency(Number(donationAmount))}
-                  </strong>
-                </DialogDescription>
+                <DialogDescription></DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleDonate} className="space-y-5 py-4">
@@ -368,15 +435,24 @@ const DonasiDetailPage = () => {
                   <Input
                     placeholder="Nama (atau tulis 'Hamba Allah')"
                     required
+                    value={formData.donorName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, donorName: e.target.value })
+                    }
                     className="rounded-none border-2 h-11 bg-muted/20 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="uppercase font-bold text-xs tracking-widest text-primary">
-                    Email / WhatsApp (Optional)
+                    Email (Optional)
                   </Label>
                   <Input
+                    type="email"
                     placeholder="Untuk laporan penggunaan dana"
+                    value={formData.donorEmail}
+                    onChange={(e) =>
+                      setFormData({ ...formData, donorEmail: e.target.value })
+                    }
                     className="rounded-none border-2 h-11 bg-muted/20 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
@@ -386,87 +462,50 @@ const DonasiDetailPage = () => {
                   </Label>
                   <Input
                     placeholder="Tuliskan doa terbaik Anda..."
+                    value={formData.message}
+                    onChange={(e) =>
+                      setFormData({ ...formData, message: e.target.value })
+                    }
                     className="rounded-none border-2 h-11 bg-muted/20 focus-visible:ring-0 focus-visible:border-primary"
                   />
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  <Label className="uppercase font-bold text-xs tracking-widest text-primary">
-                    Metode Pembayaran
-                  </Label>
-                  <RadioGroup defaultValue="qris">
-                    <div className="flex items-center justify-between p-3 border-2 rounded-none hover:bg-muted/30 hover:border-primary cursor-pointer transition-colors group">
-                      <div className="flex items-center space-x-3">
-                        <RadioGroupItem value="qris" id="bm1" />
-                        <Label
-                          htmlFor="bm1"
-                          className="cursor-pointer font-bold group-hover:text-primary"
-                        >
-                          QRIS
-                        </Label>
-                      </div>
-                      <Wallet className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
-                    </div>
-                    <div className="flex items-center justify-between p-3 border-2 rounded-none hover:bg-muted/30 hover:border-primary cursor-pointer transition-colors group">
-                      <div className="flex items-center space-x-3">
-                        <RadioGroupItem value="transfer" id="bm2" />
-                        <Label
-                          htmlFor="bm2"
-                          className="cursor-pointer font-bold group-hover:text-primary"
-                        >
-                          Transfer Bank
-                        </Label>
-                      </div>
-                      <div className="flex gap-1">
-                        <div className="w-8 h-5 bg-zinc-200 rounded-sm"></div>
-                        <div className="w-8 h-5 bg-zinc-200 rounded-sm"></div>
-                      </div>
-                    </div>
-                  </RadioGroup>
                 </div>
 
                 <DialogFooter className="pt-4">
                   <Button
                     type="submit"
+                    disabled={mutation.isPending}
                     className="w-full rounded-none font-bold uppercase tracking-widest h-12 shadow-md"
                   >
-                    Bayar Sekarang
+                    {mutation.isPending ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      "Bayar Sekarang"
+                    )}
                   </Button>
                 </DialogFooter>
               </form>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
-              <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 border-2 border-primary">
+              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4 border-2 border-green-600">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <DialogTitle className="text-2xl font-black uppercase italic">
-                Instruksi Pembayaran
+                Selesaikan Pembayaran
               </DialogTitle>
               <DialogDescription className="text-center max-w-xs mx-auto">
-                Silakan selesaikan pembayaran Anda dengan memindai kode QRIS
-                berikut.
+                Silakan selesaikan pembayaran Anda melalui jendela sistem
+                pembayaran yang muncul.
               </DialogDescription>
-
-              <div className="aspect-square w-48 bg-white rounded-none flex items-center justify-center border-4 border-zinc-900 my-4 shadow-lg">
-                <span className="text-muted-foreground text-xs font-mono">
-                  QRIS Code Placeholder
-                </span>
-              </div>
-
-              <p className="text-sm font-bold uppercase tracking-wider text-primary">
-                Total: {formatCurrency(Number(donationAmount))}
-              </p>
 
               <Button
                 onClick={() => {
                   setIsDonateOpen(false);
-                  setIsSuccess(false);
                 }}
                 variant="outline"
                 className="w-full mt-4 rounded-none border-2 font-bold uppercase"
               >
-                Saya Sudah Bayar
+                Tutup
               </Button>
             </div>
           )}

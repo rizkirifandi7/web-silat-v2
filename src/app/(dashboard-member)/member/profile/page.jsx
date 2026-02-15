@@ -1,8 +1,9 @@
+import ProfileMain from '@/components/features/Member/Profile/ProfileMain'
 import React from 'react'
 
 const PageProfilAnggota = () => {
   return (
-    <div>PageProfilAnggota</div>
+    <ProfileMain/>
   )
 }
 

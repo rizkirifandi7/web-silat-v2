@@ -8,7 +8,7 @@ import {
   IconHeartHandshake,
 } from "@tabler/icons-react";
 
-import { NavMain } from "@/components/nav-main";
+import { NavMain } from "@/components/layout/Sidebar/nav-main";
 import {
   Sidebar,
   SidebarContent,
@@ -28,19 +28,14 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "Profil Saya",
+      title: "Materi",
+      url: "/member/materi",
+      icon: IconHeartHandshake,
+    },
+    {
+      title: "Profil",
       url: "/member/profile",
       icon: IconUser,
-    },
-    {
-      title: "Event Saya",
-      url: "/member/events",
-      icon: IconCalendarEvent,
-    },
-    {
-      title: "Donasi Saya",
-      url: "/member/donations",
-      icon: IconHeartHandshake,
     },
   ],
 };

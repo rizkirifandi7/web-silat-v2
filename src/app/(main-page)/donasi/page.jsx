@@ -15,58 +15,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { getCampaigns } from "@/lib/api/donasi";
+import { Loader2 } from "lucide-react";
 
 // Mock Data for Donation Campaigns
-const campaigns = [
-  {
-    id: 1,
-    title: "Renovasi Padepokan Pusat",
-    category: "Infrastruktur",
-    target: 500000000,
-    collected: 175000000,
-    donorCount: 124,
-    daysLeft: 45,
-    image: "/pusamada-logo.png", // Placeholder
-    description:
-      "Bantu kami memperbarui fasilitas latihan di Padepokan Pusat untuk kenyamanan dan keamanan para siswa dalam berlatih.",
-  },
-  {
-    id: 2,
-    title: "Beasiswa Pesilat Berprestasi",
-    category: "Pendidikan",
-    target: 100000000,
-    collected: 45000000,
-    donorCount: 89,
-    daysLeft: 30,
-    image: "/pusamada-logo.png",
-    description:
-      "Dukungan biaya pendidikan dan latihan bagi atlet-atlet muda PUSAMADA yang berpotensi namun kurang mampu.",
-  },
-  {
-    id: 3,
-    title: "Perlengkapan Latihan Cabang Desa",
-    category: "Sarana",
-    target: 50000000,
-    collected: 12500000,
-    donorCount: 32,
-    daysLeft: 60,
-    image: "/pusamada-logo.png",
-    description:
-      "Pengadaan matras, peching pad, dan pelindung badan untuk cabang latihan di desa-desa terpencil.",
-  },
-  {
-    id: 4,
-    title: "Dana Abadi Pelestarian Budaya",
-    category: "Kebudayaan",
-    target: 1000000000,
-    collected: 350000000,
-    donorCount: 450,
-    daysLeft: 120,
-    image: "/pusamada-logo.png",
-    description:
-      "Tabungan jangka panjang untuk memastikan keberlangsungan program pelestarian budaya Pencak Silat Mande Muda.",
-  },
-];
+// Campaigns will be fetched from API
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("id-ID", {
@@ -77,10 +31,17 @@ const formatCurrency = (amount) => {
 };
 
 const DonasiPage = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: () => getCampaigns(),
+  });
+
+  const campaigns = data?.data?.data || [];
+
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* 1. Page Header */}
-      <section className="relative py-32 overflow-hidden bg-background flex items-center justify-center min-h-[40vh]">
+      <section className="relative pt-32 pb-10 overflow-hidden bg-background flex items-center justify-center min-h-[40vh]">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 -z-20">
           <Image
@@ -120,103 +81,123 @@ const DonasiPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {campaigns.map((item) => {
-            const progress = Math.min(
-              (item.collected / item.target) * 100,
-              100,
-            );
+          {isLoading ? (
+            <div className="col-span-full flex flex-col items-center justify-center py-32">
+              <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+              <p className="font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
+                Memuat Program Donasi...
+              </p>
+            </div>
+          ) : campaigns.length > 0 ? (
+            campaigns.map((item) => {
+              const progress = item.percentageReached || 0;
 
-            return (
-              <Card
-                key={item.id}
-                className="group overflow-hidden border-2 border-border shadow-none hover:shadow-xl hover:border-primary p-0 gap-0 transition-all duration-300 flex flex-col h-full bg-card rounded-none"
-              >
-                <div className="relative aspect-video overflow-hidden bg-zinc-900 border-b-2 border-border group-hover:border-primary transition-colors">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    className="object-contain p-8 group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-0 left-0 p-3">
-                    <span className="bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest px-2 py-1 skew-x-[-10deg] shadow-md inline-block">
-                      <span className="skew-x-10 inline-block">
-                        {item.category}
+              return (
+                <Card
+                  key={item.id}
+                  className="group overflow-hidden border-2 border-border shadow-none hover:shadow-xl hover:border-primary p-0 gap-0 transition-all duration-300 flex flex-col h-full bg-card rounded-none"
+                >
+                  <div className="relative aspect-video overflow-hidden bg-white dark:bg-zinc-900 border-b-2 border-border group-hover:border-primary transition-colors">
+                    <Image
+                      src={item.imageUrl || "/pusamada-logo.png"}
+                      alt={item.title}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+
+                    <div className="absolute top-0 left-0 p-3">
+                      <span className="bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest px-2 py-1 skew-x-[-10deg] shadow-md inline-block">
+                        <span className="skew-x-10 inline-block">
+                          {item.category}
+                        </span>
                       </span>
-                    </span>
-                  </div>
-                </div>
-
-                <CardHeader className="p-6 pb-2">
-                  <CardTitle className="text-xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-2 uppercase italic">
-                    <Link href={`/donasi/${item.id}`}>{item.title}</Link>
-                  </CardTitle>
-                  <CardDescription className="line-clamp-2 text-muted-foreground">
-                    {item.description}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="p-6 pt-4 grow flex flex-col justify-end">
-                  <div className="space-y-6">
-                    {/* Progress Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm items-end">
-                        <span className="font-black text-2xl text-primary italic">
-                          {Math.round(progress)}%
-                        </span>
-                        <span className="text-muted-foreground text-xs uppercase font-bold tracking-wider">
-                          <span className="text-foreground">
-                            {item.daysLeft}
-                          </span>{" "}
-                          hari lagi
-                        </span>
-                      </div>
-                      <Progress
-                        value={progress}
-                        className="h-3 rounded-none bg-zinc-800 [&>div]:bg-primary [&>div]:rounded-none"
-                      />
-                    </div>
-
-                    {/* Amounts */}
-                    <div className="flex justify-between items-end border-t border-dashed border-zinc-800 pt-4">
-                      <div>
-                        <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">
-                          Terkumpul
-                        </p>
-                        <p className="font-bold text-foreground text-sm">
-                          {formatCurrency(item.collected)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">
-                          Target
-                        </p>
-                        <p className="font-bold text-muted-foreground text-sm">
-                          {formatCurrency(item.target)}
-                        </p>
-                      </div>
                     </div>
                   </div>
-                </CardContent>
 
-                <CardFooter className="p-6 pt-0 mt-auto gap-3">
-                  <Button
-                    asChild
-                    className="w-full flex-1 font-bold uppercase tracking-widest rounded-none h-12 shadow-[4px_4px_0px_0px_var(--color-primary)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
-                  >
-                    <Link href={`/donasi/${item.id}`}>Donasi Sekarang</Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="shrink-0 h-12 w-12 rounded-none border-2 border-zinc-700 hover:bg-zinc-800 hover:text-white"
-                  >
-                    <Share2 className="w-5 h-5" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
+                  <CardHeader className="p-6 pb-2">
+                    <CardTitle className="text-xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-2 uppercase italic">
+                      <Link href={`/donasi/${item.id}`}>{item.title}</Link>
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2 text-muted-foreground">
+                      {item.description}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="p-6 pt-4 grow flex flex-col justify-end">
+                    <div className="space-y-6">
+                      {/* Progress Bar */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm items-end">
+                          <span className="font-black text-2xl text-primary italic">
+                            {Math.round(progress)}%
+                          </span>
+                          <span className="text-muted-foreground text-xs uppercase font-bold tracking-wider">
+                            {item.status === "completed" ||
+                            (item.daysLeft !== null && item.daysLeft < 0) ? (
+                              <span className="text-red-500">Selesai</span>
+                            ) : (
+                              <>
+                                <span className="text-foreground">
+                                  {item.daysLeft || 0}
+                                </span>{" "}
+                                hari lagi
+                              </>
+                            )}
+                          </span>
+                        </div>
+                        <Progress
+                          value={progress}
+                          className="h-3 rounded-none bg-zinc-800 [&>div]:bg-primary [&>div]:rounded-none"
+                        />
+                      </div>
+
+                      {/* Amounts */}
+                      <div className="flex justify-between items-end border-t border-dashed border-zinc-800 pt-4">
+                        <div>
+                          <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">
+                            Terkumpul
+                          </p>
+                          <p className="font-bold text-foreground text-sm">
+                            {formatCurrency(item.currentAmount)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-1">
+                            Target
+                          </p>
+                          <p className="font-bold text-muted-foreground text-sm">
+                            {formatCurrency(item.targetAmount)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="p-6 pt-0 mt-auto gap-3">
+                    <Button
+                      asChild
+                      className="w-full flex-1 font-bold uppercase tracking-widest rounded-none h-12 shadow-[4px_4px_0px_0px_var(--color-primary)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                    >
+                      <Link href={`/donasi/${item.id}`}>Donasi Sekarang</Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0 h-12 w-12 rounded-none border-2 border-zinc-700 hover:bg-zinc-800 hover:text-white"
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })
+          ) : (
+            <div className="col-span-full text-center py-20 border-2 border-dashed border-zinc-800">
+              <p className="text-muted-foreground uppercase font-bold tracking-widest">
+                Belum ada program donasi aktif saat ini.
+              </p>
+            </div>
+          )}
         </div>
       </section>
     </main>

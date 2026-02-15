@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Filter, Search, X, ZoomIn } from "lucide-react";
+import { Search, X, ZoomIn } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,77 +10,58 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { getGalleries } from "@/lib/api/gallery";
 
-// Mock Data
-const galleryItems = [
-  {
-    id: 1,
-    category: "Latihan",
-    src: "/pusamada-logo.png", // Placeholder
-    title: "Latihan Rutin Mingguan",
-    date: "12 Jan 2024",
-    description: "Para anggota sedang berlatih teknik dasar di padepokan.",
-  },
-  {
-    id: 2,
-    category: "Kejuaraan",
-    src: "/pusamada-logo.png",
-    title: "Juara Umum Kejurda",
-    date: "15 Feb 2024",
-    description:
-      "Tim PUSAMADA berhasil meraih juara umum pada Kejurda tahun ini.",
-  },
-  {
-    id: 3,
-    category: "Sosial",
-    src: "/pusamada-logo.png",
-    title: "Bakti Sosial Ramadhan",
-    date: "10 Mar 2024",
-    description: "Berbagi takjil dan sembako kepada masyarakat sekitar.",
-  },
-  {
-    id: 4,
-    category: "Upacara",
-    src: "/pusamada-logo.png",
-    title: "Upacara Kenaikan Sabuk",
-    date: "20 Apr 2024",
-    description:
-      "Prosesi kenaikan tingkat bagi para siswa yang telah lulus ujian.",
-  },
-  {
-    id: 5,
-    category: "Latihan",
-    src: "/pusamada-logo.png",
-    title: "Latihan Gabungan",
-    date: "5 Mei 2024",
-    description:
-      "Latihan bersama dengan perguruan sahabat untuk mempererat tali silaturahmi.",
-  },
-  {
-    id: 6,
-    category: "Kejuaraan",
-    src: "/pusamada-logo.png",
-    title: "Seleksi Atlet Nasional",
-    date: "12 Jun 2024",
-    description: "Dua atlet PUSAMADA lolos seleksi untuk mewakili provinsi.",
-  },
+const categories = [
+  "Semua",
+  "event",
+  "training",
+  "competition",
+  "ceremony",
+  "other",
 ];
 
-const categories = ["Semua", "Latihan", "Kejuaraan", "Sosial", "Upacara"];
+const categoryLabels = {
+  Semua: "Semua",
+  event: "Event",
+  training: "Latihan",
+  competition: "Kejuaraan",
+  ceremony: "Upacara",
+  other: "Lainnya",
+};
 
 const GaleriPage = () => {
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const filteredItems =
-    activeCategory === "Semua"
-      ? galleryItems
-      : galleryItems.filter((item) => item.category === activeCategory);
+  const { data: galleryData, isLoading } = useQuery({
+    queryKey: ["public-galleries", activeCategory],
+    queryFn: () =>
+      getGalleries({
+        category: activeCategory === "Semua" ? undefined : activeCategory,
+      }),
+  });
+
+  const rawItems = galleryData?.data?.data || [];
+
+  const galleryItems = rawItems.map((item) => ({
+    id: item.id,
+    category: item.category, // enum value
+    src: item.photoUrl,
+    title: item.title,
+    date: new Date(item.takenAt || item.createdAt).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }),
+    description: item.description,
+  }));
 
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* 1. Page Header */}
-      <section className="relative py-32 overflow-hidden bg-background flex items-center justify-center min-h-[40vh]">
+      <section className="relative pt-32 pb-10 overflow-hidden bg-background flex items-center justify-center min-h-[40vh]">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 -z-20">
           <Image
@@ -110,7 +91,7 @@ const GaleriPage = () => {
         </div>
       </section>
 
-      <div className="w-full max-w-7xl mx-auto px-4 mt-8">
+      <div className="w-full max-w-7xl mx-auto px-4 ">
         {/* 2. Filter Controls */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
           {categories.map((category) => (
@@ -124,56 +105,64 @@ const GaleriPage = () => {
                   : "bg-transparent text-muted-foreground border-muted-foreground/30 hover:border-primary hover:text-primary"
               }`}
             >
-              <span className="skew-x-10">{category}</span>
+              <span className="skew-x-10">{categoryLabels[category]}</span>
             </Button>
           ))}
         </div>
 
         {/* 3. Image Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="group rounded-none border-2 border-border bg-card overflow-hidden cursor-pointer hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl"
-              onClick={() => setSelectedImage(item)}
-            >
-              <div className="relative aspect-4/3 overflow-hidden bg-muted/20">
-                <Image
-                  src={item.src}
-                  alt={item.title}
-                  fill
-                  className="object-contain p-8 group-hover:scale-110 transition-transform duration-700"
-                />
-                {/* Overlay Icon Only */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="bg-primary/90 text-primary-foreground p-3 rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-100">
-                    <ZoomIn className="w-6 h-6" />
+          {isLoading ? (
+            <div className="col-span-full text-center py-20">
+              Memuat foto...
+            </div>
+          ) : (
+            galleryItems.map((item) => (
+              <div
+                key={item.id}
+                className="group rounded-none border-2 border-border bg-card overflow-hidden cursor-pointer hover:-translate-y-2 transition-transform duration-300 shadow-md hover:shadow-xl"
+                onClick={() => setSelectedImage(item)}
+              >
+                <div className="relative aspect-4/3 overflow-hidden bg-muted/20">
+                  <Image
+                    src={item.src}
+                    alt={item.title}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  {/* Overlay Icon Only */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="bg-primary/90 text-primary-foreground p-3 rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-100">
+                      <ZoomIn className="w-6 h-6" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Card Content - Always Visible */}
-              <div className="p-5 border-t-2 border-border bg-background relative">
-                <div className="absolute top-0 right-0 w-8 h-8 bg-border skew-x-[-10deg] -mt-4 mr-4 hidden md:block"></div>
+                {/* Card Content - Always Visible */}
+                <div className="p-5 border-t-2 border-border bg-background relative">
+                  <div className="absolute top-0 right-0 w-8 h-8 bg-border skew-x-[-10deg] -mt-4 mr-4 hidden md:block"></div>
 
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 rounded-none skew-x-[-10deg]">
-                    <span className="skew-x-10">{item.category}</span>
-                  </span>
-                  <span className="text-xs text-muted-foreground font-medium">
-                    {item.date}
-                  </span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 rounded-none skew-x-[-10deg]">
+                      <span className="skew-x-10">
+                        {categoryLabels[item.category] || item.category}
+                      </span>
+                    </span>
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {item.date}
+                    </span>
+                  </div>
+
+                  <h3 className="font-black text-xl leading-tight uppercase italic text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                    {item.title}
+                  </h3>
                 </div>
-
-                <h3 className="font-black text-xl leading-tight uppercase italic text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                  {item.title}
-                </h3>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        {filteredItems.length === 0 && (
+        {!isLoading && galleryItems.length === 0 && (
           <div className="text-center py-32 text-muted-foreground">
             <Search className="w-16 h-16 mx-auto mb-6 opacity-20" />
             <p className="text-xl font-medium">
@@ -230,7 +219,8 @@ const GaleriPage = () => {
                   <div className="mt-8 md:mt-4">
                     <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 rounded-none skew-x-[-10deg] mb-6">
                       <span className="skew-x-10">
-                        {selectedImage.category}
+                        {categoryLabels[selectedImage.category] ||
+                          selectedImage.category}
                       </span>
                     </span>
                     <h2 className="text-2xl md:text-3xl font-black text-white mb-4 leading-tight uppercase italic">

@@ -19,7 +19,7 @@ const KontakPage = () => {
   return (
     <main className="min-h-screen bg-background pb-0">
       {/* 1. Page Header */}
-      <section className="relative py-32 overflow-hidden bg-background flex items-center justify-center min-h-[40vh]">
+      <section className="relative  pt-32 pb-10 overflow-hidden bg-background flex items-center justify-center min-h-[40vh]">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 -z-20">
           <Image

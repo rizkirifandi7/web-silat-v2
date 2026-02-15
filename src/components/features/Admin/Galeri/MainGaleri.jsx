@@ -2,35 +2,30 @@
 
 import { DataTable } from "@/components/common/Table/DataTable";
 import TitleDashboard from "@/components/common/Title/TitleDashboard";
-import React from "react";
+import React, { useState } from "react";
 import { columnsGaleri } from "./ColumnGaleri";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { AddGaleri } from "./AddGaleri";
-
-const data = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "[EMAIL_ADDRESS]",
-    amount: 100,
-  },
-  {
-    id: "2",
-    name: "Jane Doe",
-    email: "[EMAIL_ADDRESS]",
-    amount: 200,
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { getGalleries } from "@/lib/api/gallery";
 
 const MainGaleri = () => {
   const [globalFilter, setGlobalFilter] = useState("");
+  const { data, isLoading } = useQuery({
+    queryKey: ["galleries", globalFilter],
+    queryFn: () => getGalleries({ search: globalFilter }),
+  });
+
+  const galleries = data?.data?.data || [];
 
   return (
     <div>
-      <TitleDashboard title="Galeri" subtitle="Manajemen galeri" />
+      <TitleDashboard
+        title="Galeri"
+        subtitle="Manajemen galeri foto kegiatan"
+      />
       <div className="flex flex-col gap-4 mt-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <Input
             placeholder="Search..."
             value={globalFilter}
@@ -41,9 +36,7 @@ const MainGaleri = () => {
         </div>
         <DataTable
           columns={columnsGaleri}
-          data={data || []}
-          globalFilter={globalFilter}
-          setGlobalFilter={setGlobalFilter}
+          data={galleries}
         />
       </div>
     </div>

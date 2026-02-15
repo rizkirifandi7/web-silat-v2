@@ -9,7 +9,7 @@ import {
   IconSettings,
 } from "@tabler/icons-react";
 
-import { NavMain } from "@/components/nav-main";
+import { NavMain } from "@/components/layout/Sidebar/nav-main";
 import {
   Sidebar,
   SidebarContent,
@@ -29,33 +29,38 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "Manajemen Galeri",
+      title: "Galeri",
       url: "/admin/galeri",
       icon: IconChartBar,
     },
     {
-      title: "Manajemen Donasi",
+      title: "Donasi",
       url: "/admin/donasi",
       icon: IconFolder,
     },
     {
-      title: "Manajemen Event",
+      title: "Event",
       url: "/admin/event",
       icon: IconChartBar,
     },
     {
-      title: "Manajemen Materi",
+      title: "Materi",
       url: "/admin/materi",
       icon: IconChartBar,
     },
     {
-      title: "Manajemen Tentang Kami",
+      title: "Tentang Kami",
       url: "/admin/tentang-kami",
       icon: IconSettings,
     },
     {
-      title: "Manajemen User",
-      url: "/admin/anggota",
+      title: "User",
+      url: "/admin/user",
+      icon: IconUsers,
+    },
+    {
+      title: "Katalog",
+      url: "/admin/katalog",
       icon: IconUsers,
     },
   ],
@@ -78,7 +83,7 @@ export function SidebarAdmin({ ...props }) {
                   width={24}
                   height={24}
                 />
-                <span className="text-base font-semibold">Admin Panel</span>
+                <span className="text-base font-semibold">Pusamada</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

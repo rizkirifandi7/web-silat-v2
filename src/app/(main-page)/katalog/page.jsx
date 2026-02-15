@@ -28,75 +28,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useQuery } from "@tanstack/react-query";
+import { getProducts } from "@/lib/api/katalog";
+import { Loader2 } from "lucide-react";
 
 // Mock Data for Products
-const products = [
-  {
-    id: 1,
-    name: "Seragam Latihan Standar IPSI",
-    category: "Seragam",
-    price: 250000,
-    image: "/pusamada-logo.png",
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: "Kaos Polo PUSAMADA Exclusive",
-    category: "Kaos",
-    price: 150000,
-    image: "/pusamada-logo.png",
-    isNew: false,
-  },
-  {
-    id: 3,
-    name: "Celana Pangsi Hitam",
-    category: "Seragam",
-    price: 120000,
-    image: "/pusamada-logo.png",
-    isNew: false,
-  },
-  {
-    id: 4,
-    name: "Ikat Kepala / Udeng Tradisional",
-    category: "Aksesoris",
-    price: 45000,
-    image: "/pusamada-logo.png",
-    isNew: false,
-  },
-  {
-    id: 5,
-    name: "Tas Serut Gymsack Logo",
-    category: "Aksesoris",
-    price: 85000,
-    image: "/pusamada-logo.png",
-    isNew: true,
-  },
-  {
-    id: 6,
-    name: "Jaket Hoodie Zipper",
-    category: "Jaket",
-    price: 275000,
-    image: "/pusamada-logo.png",
-    isNew: false,
-  },
-  {
-    id: 7,
-    name: "Pecing Pad Target Tendangan",
-    category: "Perlengkapan",
-    price: 185000,
-    image: "/pusamada-logo.png",
-    isNew: true,
-  },
-  {
-    id: 8,
-    name: "Body Protector Silat Standard",
-    category: "Perlengkapan",
-    price: 350000,
-    image: "/pusamada-logo.png",
-    isNew: false,
-  },
-];
+// Categories for filter
 
 const categories = [
   "Semua",
@@ -119,20 +56,18 @@ const KatalogPage = () => {
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Simple filter logic
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      activeCategory === "Semua" || product.category === activeCategory;
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+  const { data, isLoading } = useQuery({
+    queryKey: ["products", activeCategory, searchQuery],
+    queryFn: () =>
+      getProducts({ kategori: activeCategory, search: searchQuery }),
   });
+
+  const products = data?.data?.data || [];
 
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* 1. Page Header */}
-      <section className="relative py-32 overflow-hidden bg-background flex items-center justify-center min-h-[40vh]">
+      <section className="relative pt-32 pb-10 overflow-hidden bg-background flex items-center justify-center min-h-[40vh]">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 -z-20">
           <Image
@@ -289,9 +224,7 @@ const KatalogPage = () => {
             <div className="mb-8 flex items-center justify-between border-b pb-4 border-dashed border-zinc-700">
               <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 Menampilkan{" "}
-                <strong className="text-foreground">
-                  {filteredProducts.length}
-                </strong>{" "}
+                <strong className="text-foreground">{products.length}</strong>{" "}
                 produk{" "}
                 {activeCategory !== "Semua"
                   ? `di kategori ${activeCategory}`
@@ -299,20 +232,28 @@ const KatalogPage = () => {
               </p>
             </div>
 
-            {filteredProducts.length > 0 ? (
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-32">
+                <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+                <p className="font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
+                  Memuat Produk...
+                </p>
+              </div>
+            ) : products.length > 0 ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <Card
                     key={product.id}
-                    className="group overflow-hidden rounded-none border-2 border-border bg-card shadow-none hover:border-primary hover:shadow-[8px_8px_0px_0px_var(--color-primary)] transition-all duration-300 flex flex-col h-full"
+                    className="group overflow-hidden rounded-none border-2 border-border bg-card shadow-none p-0 hover:border-primary hover:shadow-[8px_8px_0px_0px_var(--color-primary)] transition-all duration-300 flex flex-col h-full"
                   >
-                    <div className="relative aspect-square overflow-hidden bg-white/5 border-b-2 border-border group-hover:border-primary transition-colors">
+                    <div className="relative aspect-square overflow-hidden bg-white dark:bg-zinc-900/50 border-b-2 border-border group-hover:border-primary transition-colors">
                       <Image
-                        src={product.image}
-                        alt={product.name}
+                        src={product.imageUrl}
+                        alt={product.nama}
                         fill
                         className="object-contain p-8 group-hover:scale-110 transition-transform duration-500 will-change-transform"
                       />
+
                       {/* Tags */}
                       <div className="absolute top-0 left-0 p-3 flex flex-col gap-2">
                         {product.isNew && (
@@ -338,18 +279,18 @@ const KatalogPage = () => {
 
                     <div className="p-5 flex flex-col flex-1">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                        {product.category}
+                        {product.kategori}
                       </p>
                       <h3 className="text-base md:text-lg font-black leading-tight group-hover:text-primary transition-colors line-clamp-2 uppercase italic mb-3">
                         <Link href={`/katalog/${product.id}`}>
-                          {product.name}
+                          {product.nama}
                         </Link>
                       </h3>
 
                       <div className="mt-auto pt-4 border-t border-dashed border-border flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                           <p className="font-bold text-lg md:text-xl text-primary">
-                            {formatCurrency(product.price)}
+                            {formatCurrency(product.harga)}
                           </p>
                         </div>
                         <Button

@@ -66,7 +66,10 @@ export function DataTable({ columns, data, globalFilter, setGlobalFilter }) {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className={"font-semibold bg-gray-50"}>
+                    <TableHead
+                      key={header.id}
+                      className={"font-semibold bg-gray-50 px-4"}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -87,7 +90,7 @@ export function DataTable({ columns, data, globalFilter, setGlobalFilter }) {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className={"px-4 capitalize"}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -109,9 +112,8 @@ export function DataTable({ columns, data, globalFilter, setGlobalFilter }) {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between px-2 mt-4">
+      <div className="flex items-center justify-between mt-4">
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {

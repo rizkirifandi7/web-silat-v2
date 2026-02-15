@@ -1,9 +1,8 @@
-import React from 'react'
+import MainMateri from "@/components/features/Admin/Materials/MainMateri";
+import React from "react";
 
 const PageMateri = () => {
-  return (
-    <div>PageMateri</div>
-  )
-}
+  return <MainMateri />;
+};
 
-export default PageMateri 
+export default PageMateri;

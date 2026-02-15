@@ -1,9 +1,18 @@
-import React from 'react'
+"use client";
 
-const PageEvent = () => {
+import { MainEvent } from "@/components/features/Admin/Events/MainEvent";
+
+export default function EventPage() {
   return (
-    <div>PageEvent</div>
-  )
-}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Event</h1>
+        <p className="text-muted-foreground">
+          Kelola jadwal event, seminar, dan kegiatan lainnya.
+        </p>
+      </div>
 
-export default PageEvent
+      <MainEvent />
+    </div>
+  );
+}
