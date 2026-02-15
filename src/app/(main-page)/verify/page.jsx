@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import QRScanner from "@/components/features/Verify/Scanner";
 import { QrCode } from "lucide-react";
 
-const PageVerify = () => {
-  const router = useRouter();
+import { Suspense } from "react";
+
+function SearchParamsHandler({ router }) {
   const searchParams = useSearchParams();
 
   // --- 1. AUTO REDIRECT DARI URL PARAM (?id=...) ---
@@ -16,6 +17,12 @@ const PageVerify = () => {
       router.push(`/verify/${id}`);
     }
   }, [searchParams, router]);
+
+  return null;
+}
+
+const PageVerify = () => {
+  const router = useRouter();
 
   // --- 2. HANDLER SCANNER ---
   const handleScanSuccess = useCallback(
@@ -58,6 +65,11 @@ const PageVerify = () => {
             status keanggotaan.
           </p>
         </div>
+
+        {/* Suspense boundary for useSearchParams */}
+        <Suspense>
+          <SearchParamsHandler router={router} />
+        </Suspense>
 
         {/* Dynamic Area */}
         <div className="flex flex-col items-center justify-center min-h-[400px]">
