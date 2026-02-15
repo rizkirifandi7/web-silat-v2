@@ -200,7 +200,7 @@ const TentangPage = () => {
             </div>
           </div>
 
-          <div className="max-w-4xl mx-auto p-8 border-2 border-dashed border-zinc-200 rounded-none bg-zinc-50/50">
+          <div className="p-8 border-2 border-dashed border-zinc-200 rounded-none bg-zinc-50/50">
             <h3 className="font-black text-2xl text-foreground uppercase italic mb-6 text-center">
               Filosofi <span className="text-primary">Mendalam</span>
             </h3>

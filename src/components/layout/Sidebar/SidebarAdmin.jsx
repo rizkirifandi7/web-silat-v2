@@ -7,6 +7,7 @@ import {
   IconFolder,
   IconUsers,
   IconSettings,
+  IconCreditCard,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/layout/Sidebar/nav-main";
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import Link from "next/link";
+import { Archive, Calendar, Camera, HandCoins, IdCard, LibraryBig, Store } from "lucide-react";
 
 const data = {
   navMain: [
@@ -31,27 +33,27 @@ const data = {
     {
       title: "Galeri",
       url: "/admin/galeri",
-      icon: IconChartBar,
+      icon: Camera,
     },
     {
       title: "Donasi",
       url: "/admin/donasi",
-      icon: IconFolder,
+      icon: HandCoins,
     },
     {
       title: "Event",
       url: "/admin/event",
-      icon: IconChartBar,
+      icon: Calendar,
     },
     {
       title: "Materi",
       url: "/admin/materi",
-      icon: IconChartBar,
+      icon: LibraryBig,
     },
     {
       title: "Tentang Kami",
       url: "/admin/tentang-kami",
-      icon: IconSettings,
+      icon: Store,
     },
     {
       title: "User",
@@ -61,7 +63,12 @@ const data = {
     {
       title: "Katalog",
       url: "/admin/katalog",
-      icon: IconUsers,
+      icon: Archive,
+    },
+    {
+      title: "Cetak Kartu",
+      url: "/admin/cetak-kartu",
+      icon: IdCard,
     },
   ],
 };

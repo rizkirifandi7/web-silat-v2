@@ -22,12 +22,24 @@ import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
-import { Save, Loader2, UploadCloud, Plus, Trash2 } from "lucide-react";
+import {
+  Save,
+  Loader2,
+  UploadCloud,
+  Plus,
+  Trash2,
+  History,
+  Target,
+  Lightbulb,
+  ImageIcon,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   sejarah: z.string().optional(),
@@ -41,7 +53,7 @@ export function AboutForm() {
   const queryClient = useQueryClient();
   const [logoPreview, setLogoPreview] = useState(null);
 
-  // Fetch existing data
+  // --- QUERY & MUTATION ---
   const { data: aboutData, isLoading: isFetching } = useQuery({
     queryKey: ["about"],
     queryFn: getAboutInfo,
@@ -76,57 +88,32 @@ export function AboutForm() {
     name: "filosofiLogo",
   });
 
-  // Reset form when data is loaded
+  // --- EFFECT: POPULATE DATA ---
   useEffect(() => {
     if (aboutData?.data?.data) {
       const { sejarah, visi, misi, filosofiLogo } = aboutData.data.data;
 
-      // Handle misi array from backend or empty string fallback
-      let missionArray = [{ value: "" }];
-      let rawMisi = misi;
-
-      // Handle stringified JSON if it arrives that way
-      if (typeof rawMisi === "string" && rawMisi.startsWith("[")) {
-        try {
-          rawMisi = JSON.parse(rawMisi);
-        } catch (e) {
-          // Keep as string if parsing fails
+      const parseArray = (data) => {
+        let arr = [{ value: "" }];
+        let raw = data;
+        if (typeof raw === "string" && raw.startsWith("[")) {
+          try {
+            raw = JSON.parse(raw);
+          } catch (e) {}
         }
-      }
-
-      if (Array.isArray(rawMisi)) {
-        missionArray = rawMisi.map((m) =>
-          typeof m === "string" ? { value: m } : m,
-        );
-      } else if (typeof rawMisi === "string" && rawMisi) {
-        missionArray = [{ value: rawMisi }];
-      }
-
-      // Handle filosofi array
-      let philosophyArray = [{ value: "" }];
-      let rawFilosofi = filosofiLogo;
-
-      if (typeof rawFilosofi === "string" && rawFilosofi.startsWith("[")) {
-        try {
-          rawFilosofi = JSON.parse(rawFilosofi);
-        } catch (e) {
-          // Keep as string
+        if (Array.isArray(raw)) {
+          arr = raw.map((m) => (typeof m === "string" ? { value: m } : m));
+        } else if (typeof raw === "string" && raw) {
+          arr = [{ value: raw }];
         }
-      }
-
-      if (Array.isArray(rawFilosofi)) {
-        philosophyArray = rawFilosofi.map((p) =>
-          typeof p === "string" ? { value: p } : p,
-        );
-      } else if (typeof rawFilosofi === "string" && rawFilosofi) {
-        philosophyArray = [{ value: rawFilosofi }];
-      }
+        return arr;
+      };
 
       form.reset({
         sejarah: sejarah || "",
         visi: visi || "",
-        misi: missionArray,
-        filosofiLogo: philosophyArray,
+        misi: parseArray(misi),
+        filosofiLogo: parseArray(filosofiLogo),
       });
     }
   }, [aboutData, form]);
@@ -134,7 +121,9 @@ export function AboutForm() {
   const existingLogoUrl = aboutData?.data?.data?.logoUrl
     ? aboutData.data.data.logoUrl.startsWith("http")
       ? aboutData.data.data.logoUrl
-      : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/${aboutData.data.data.logoUrl}`
+      : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/${
+          aboutData.data.data.logoUrl
+        }`
     : null;
 
   const currentLogo = logoPreview || existingLogoUrl;
@@ -144,16 +133,14 @@ export function AboutForm() {
     mutationFn: updateAboutInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["about"] });
-      toast.success("Berhasil memperbarui informasi", {
-        description: "Data tentang kami telah berhasil disimpan.",
+      toast.success("Berhasil disimpan", {
+        description: "Informasi organisasi telah diperbarui.",
       });
       setLogoPreview(null);
     },
     onError: (error) => {
-      toast.error("Gagal memperbarui informasi", {
-        description:
-          error.response?.data?.message ||
-          "Terjadi kesalahan saat menyimpan data.",
+      toast.error("Gagal menyimpan", {
+        description: error.response?.data?.message || "Terjadi kesalahan.",
       });
     },
   });
@@ -163,7 +150,6 @@ export function AboutForm() {
     formData.append("sejarah", values.sejarah || "");
     formData.append("visi", values.visi || "");
 
-    // Extract strings from objects and stringify for backend
     const missionPoints =
       values.misi?.map((m) => m.value).filter((v) => v.trim() !== "") || [];
     formData.append("misi", JSON.stringify(missionPoints));
@@ -181,7 +167,7 @@ export function AboutForm() {
   };
 
   const handleLogoChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -194,265 +180,312 @@ export function AboutForm() {
   const isLoading = updateMutation.isPending || isFetching;
 
   return (
-    <div className="w-full">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start border rounded-xl p-4">
-            {/* Left Column: Identity Card */}
-            <Card className="border shadow-sm bg-card overflow-hidden h-full gap-0">
-              <CardHeader className="bg-muted/10 pb-4 border-b">
-                <CardTitle className="text-lg font-semibold tracking-tight">
-                  Identitas Organisasi
-                </CardTitle>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
+      >
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          {/* --- KOLOM KIRI: KONTEN TEKS (8 cols) --- */}
+          <div className="xl:col-span-8 space-y-8">
+            {/* Kartu Sejarah */}
+            <Card className="border-border/60 shadow-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                    <History className="w-5 h-5" />
+                  </div>
+                  <CardTitle>Sejarah Organisasi</CardTitle>
+                </div>
                 <CardDescription>
-                  Narasi sejarah dan arah tujuan organisasi.
+                  Ceritakan perjalanan, latar belakang, dan momen penting
+                  pendirian organisasi.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <Separator />
+              <CardContent className="p-6">
                 <FormField
                   control={form.control}
                   name="sejarah"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Sejarah Singkat</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Ceritakan awal mula dan perkembangan organisasi..."
-                          className="h-[250px] resize-none focus-visible:ring-primary/20 overflow-y-auto"
+                          placeholder="Tuliskan sejarah lengkap di sini..."
+                          className="max-h-[500px] resize-none text-base leading-relaxed border-muted-foreground/20 focus:border-primary"
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription className="text-xs">
-                        Cerita ini akan ditampilkan pada halaman &rdquo;Tentang
-                        Kami&rdquo;.
-                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Kartu Visi & Misi */}
+            <Card className="border-border/60 shadow-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="p-2 bg-blue-500/10 rounded-lg text-blue-600">
+                    <Target className="w-5 h-5" />
+                  </div>
+                  <CardTitle>Visi & Misi</CardTitle>
+                </div>
+                <CardDescription>
+                  Tujuan jangka panjang dan langkah-langkah strategis
+                  organisasi.
+                </CardDescription>
+              </CardHeader>
+              <Separator />
+              <CardContent className="p-6 space-y-8">
+                {/* Visi */}
+                <FormField
+                  control={form.control}
+                  name="visi"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold">
+                        Visi
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Contoh: Menjadi organisasi terdepan dalam..."
+                          className="h-[100px] resize-none border-muted-foreground/20"
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid grid-cols-1 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="visi"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Visi</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Tuliskan visi jangka panjang..."
-                            className="h-[120px] resize-none focus-visible:ring-primary/20 overflow-y-auto"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                {/* Misi */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-base font-semibold">
+                      Misi
+                    </FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => appendMission({ value: "" })}
+                      className="text-primary hover:bg-primary/10 hover:text-primary h-8"
+                    >
+                      <Plus className="w-4 h-4 mr-2" /> Tambah Poin
+                    </Button>
+                  </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Misi (Poin-poin)</FormLabel>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => appendMission({ value: "" })}
-                        className="h-8 px-2 text-xs"
+                  <div className="space-y-3">
+                    {missionFields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="group flex gap-3 items-center animate-in slide-in-from-left-2 duration-300"
                       >
-                        <Plus className="w-3 h-3 mr-1" />
-                        Tambah Poin
-                      </Button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {missionFields.map((field, index) => (
-                        <div key={field.id} className="flex gap-2 items-start">
-                          <div className="shrink-0 mt-2.5 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                            {index + 1}
-                          </div>
-                          <FormField
-                            control={form.control}
-                            name={`misi.${index}.value`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1 space-y-0">
-                                <FormControl>
-                                  <Input
-                                    placeholder={`Poin misi ke-${index + 1}...`}
-                                    className="focus-visible:ring-primary/20"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          {missionFields.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeMission(index)}
-                              className="shrink-0 text-muted-foreground hover:text-destructive h-10 w-10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs font-bold shrink-0">
+                          {index + 1}
+                        </span>
+                        <FormField
+                          control={form.control}
+                          name={`misi.${index}.value`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1 space-y-0">
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Tulis poin misi..."
+                                  className="bg-transparent border-0 border-b border-muted-foreground/20 rounded-none focus-visible:ring-0 focus-visible:border-primary px-0 shadow-none"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
                           )}
-                        </div>
-                      ))}
-                    </div>
+                        />
+                        {missionFields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeMission(index)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardContent>
             </Card>
+          </div>
 
-            {/* Right Column: Branding Card */}
-            <Card className="border shadow-sm bg-card overflow-hidden h-full gap-0">
-              <CardHeader className="bg-muted/10 pb-4 border-b">
-                <CardTitle className="text-lg font-semibold tracking-tight">
-                  Branding & Filosofi
-                </CardTitle>
-                <CardDescription>
-                  Identitas visual dan nilai-nilai simbolis.
-                </CardDescription>
+          {/* --- KOLOM KANAN: BRANDING (4 cols) --- */}
+          <div className="xl:col-span-4 space-y-8">
+            <Card className="border-border/60 shadow-sm sticky top-6">
+              <CardHeader className="bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                  <CardTitle className="text-base">Identitas Visual</CardTitle>
+                </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-8">
-                <div className="flex flex-col gap-6">
-                  {/* Logo Section */}
-                  <FormField
-                    control={form.control}
-                    name="logo"
-                    render={({ field }) => (
-                      <FormItem className="w-full flex flex-col gap-2">
-                        <FormLabel>Logo</FormLabel>
-                        <div
-                          className="relative group w-full h-100 border-2 border-dashed rounded-xl bg-muted/20 overflow-hidden flex flex-col items-center justify-center hover:bg-muted/30 transition-all cursor-pointer"
-                          onClick={() =>
-                            document.getElementById("logo-upload").click()
-                          }
-                        >
-                          {currentLogo ? (
-                            <>
+              <CardContent className="p-6 space-y-6">
+                {/* Logo Upload */}
+                <FormField
+                  control={form.control}
+                  name="logo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Logo Organisasi</FormLabel>
+                      <div
+                        className={cn(
+                          "relative group w-full aspect-square border-2 border-dashed border-muted-foreground/25 rounded-2xl bg-muted/5 overflow-hidden flex flex-col items-center justify-center cursor-pointer transition-all hover:border-primary hover:bg-primary/5",
+                          currentLogo ? "border-solid border-border" : "",
+                        )}
+                        onClick={() =>
+                          document.getElementById("logo-upload")?.click()
+                        }
+                      >
+                        {currentLogo ? (
+                          <>
+                            <div className="absolute inset-4">
                               <Image
                                 src={currentLogo}
                                 alt="Logo Preview"
                                 fill
-                                className="object-contain p-4 transition-transform group-hover:scale-105"
+                                className="object-contain"
                                 unoptimized
                               />
-                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span className="text-white text-xs font-medium bg-black/50 px-3 py-1 rounded-full">
-                                  Ganti Logo
-                                </span>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex flex-col items-center gap-2 text-muted-foreground/60 transition-colors group-hover:text-primary/80">
-                              <UploadCloud className="h-10 w-10" />
-                              <span className="text-xs font-medium">
-                                Upload Logo
+                            </div>
+                            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                              <UploadCloud className="w-8 h-8 text-white mb-2" />
+                              <span className="text-white text-xs font-medium">
+                                Ganti Gambar
                               </span>
                             </div>
-                          )}
-                        </div>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            id="logo-upload"
-                            {...logoRef}
-                            onChange={(e) => {
-                              handleLogoChange(e);
-                              field.onChange(e.target.files);
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Filosofi Section */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Filosofi Logo (Poin-poin)</FormLabel>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => appendPhilosophy({ value: "" })}
-                        className="h-8 px-2 text-xs"
-                      >
-                        <Plus className="w-3 h-3 mr-1" />
-                        Tambah Poin
-                      </Button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {philosophyFields.map((field, index) => (
-                        <div key={field.id} className="flex gap-2 items-start">
-                          <div className="shrink-0 mt-2.5 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                            {index + 1}
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center gap-3 text-muted-foreground p-4 text-center">
+                            <div className="p-3 bg-background rounded-full shadow-sm">
+                              <UploadCloud className="h-6 w-6" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium">
+                                Klik untuk upload
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                PNG, JPG (Max 2MB)
+                              </p>
+                            </div>
                           </div>
-                          <FormField
-                            control={form.control}
-                            name={`filosofiLogo.${index}.value`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1 space-y-0">
-                                <FormControl>
-                                  <Input
-                                    placeholder={`Poin filosofi ke-${index + 1}...`}
-                                    className="focus-visible:ring-primary/20"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          {philosophyFields.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removePhilosophy(index)}
-                              className="shrink-0 text-muted-foreground hover:text-destructive h-10 w-10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
+                        )}
+                      </div>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          id="logo-upload"
+                          {...logoRef}
+                          onChange={(e) => {
+                            handleLogoChange(e);
+                            field.onChange(e.target.files);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Separator />
+
+                {/* Filosofi Logo */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-amber-500" />
+                      <FormLabel>Filosofi Logo</FormLabel>
                     </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => appendPhilosophy({ value: "" })}
+                      className="h-6 w-6 rounded-full border border-dashed border-muted-foreground/50 hover:border-primary hover:text-primary"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
                   </div>
+
+                  <div className="space-y-2">
+                    {philosophyFields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="flex gap-2 items-start group"
+                      >
+                        <FormField
+                          control={form.control}
+                          name={`filosofiLogo.${index}.value`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1 space-y-0">
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Makna simbol..."
+                                  className="h-9 text-sm bg-muted/30 focus:bg-background transition-colors"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removePhilosophy(index)}
+                          className="h-9 w-9 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    {philosophyFields.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic text-center py-4">
+                        Belum ada filosofi ditambahkan.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <div className="pt-4">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={isLoading}
+                    className="w-full font-semibold shadow-lg shadow-primary/20"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Menyimpan...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Simpan Perubahan
+                      </>
+                    )}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
-
-          <div className="flex items-center justify-end pt-4">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isLoading}
-              className="min-w-[150px] shadow-md transition-all hover:shadow-lg"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Menyimpan...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Simpan Perubahan
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+        </div>
+      </form>
+    </Form>
   );
 }
