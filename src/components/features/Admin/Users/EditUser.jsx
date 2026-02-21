@@ -40,18 +40,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Loader2, Pencil, Shield, User, Medal } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-
-export const URUTAN_SABUK = [
-  "Belum punya",
-  "LULUS Binfistal",
-  "Sabuk Hitam Wiraga 1",
-  "Sabuk Hitam Wiraga 2",
-  "Sabuk Hitam Wiraga 3",
-  "Sabuk Putih",
-  "Sabuk Kuning",
-  "Sabuk Hijau",
-  "Sabuk Merah",
-];
+import { URUTAN_SABUK } from "@/constant/data";
 
 // Skema disamakan persis dengan AddUser
 const formSchema = z.object({

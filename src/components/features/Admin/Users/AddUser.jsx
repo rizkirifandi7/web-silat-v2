@@ -38,18 +38,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 
 import { Loader2, Plus, UserPlus, Shield, User, Medal } from "lucide-react";
-
-export const URUTAN_SABUK = [
-  "Belum punya",
-  "LULUS Binfistal",
-  "Sabuk Hitam Wiraga 1",
-  "Sabuk Hitam Wiraga 2",
-  "Sabuk Hitam Wiraga 3",
-  "Sabuk Putih",
-  "Sabuk Kuning",
-  "Sabuk Hijau",
-  "Sabuk Merah",
-];
+import { URUTAN_SABUK } from "@/constant/data";
 
 const formSchema = z.object({
   nama: z.string().min(1, "Nama wajib diisi"),
