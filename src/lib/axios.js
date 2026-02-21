@@ -14,7 +14,13 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         Cookies.remove("user_role", { path: "/" });
-        window.location.href = "/login";
+        // Jangan redirect kalau sudah di halaman login/register
+        const isAuthPage =
+          window.location.pathname === "/login" ||
+          window.location.pathname === "/register";
+        if (!isAuthPage) {
+          window.location.href = "/login";
+        }
       }
     }
     return Promise.reject(error);

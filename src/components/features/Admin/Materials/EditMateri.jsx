@@ -37,7 +37,14 @@ import { Switch } from "@/components/ui/switch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateMaterial } from "@/lib/api/materi";
 import { toast } from "sonner";
-import { Loader2, PencilLine, UploadCloud, FileText, Link as LinkIcon, BookOpen } from "lucide-react";
+import {
+  Loader2,
+  PencilLine,
+  UploadCloud,
+  FileText,
+  Link as LinkIcon,
+  BookOpen,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const formSchema = z.object({
@@ -63,7 +70,8 @@ const formSchema = z.object({
 });
 
 // Konstanta style input
-const inputStyles = "bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
+const inputStyles =
+  "bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
 
 export function EditMateri({ open, setOpen, material }) {
   const queryClient = useQueryClient();
@@ -151,9 +159,11 @@ export function EditMateri({ open, setOpen, material }) {
   const isUrl = material?.fileUrl?.startsWith("http");
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => (!isOpen ? closeDialog() : setOpen(true))}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => (!isOpen ? closeDialog() : setOpen(true))}
+    >
       <DialogContent className="sm:max-w-3xl bg-white border-neutral-200 shadow-xl rounded-2xl max-h-[90vh] p-0 flex flex-col gap-0 overflow-hidden">
-        
         {/* HEADER */}
         <DialogHeader className="p-6 border-b border-neutral-100 bg-neutral-50/50 shrink-0">
           <div className="flex items-center gap-3">
@@ -172,13 +182,14 @@ export function EditMateri({ open, setOpen, material }) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
             <ScrollArea className="flex-1 px-6 py-6 custom-scrollbar bg-neutral-50/50 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-4">
-                
                 {/* KOLOM KIRI */}
                 <div className="space-y-6">
-                  
                   {/* UPLOAD FILE BARU (REPLACE EXISTING) */}
                   <FormField
                     control={form.control}
@@ -191,9 +202,11 @@ export function EditMateri({ open, setOpen, material }) {
                           </FormLabel>
                         </div>
                         <FormControl>
-                          <div 
+                          <div
                             className={`relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl transition-colors cursor-pointer overflow-hidden ${
-                              form.formState.errors.file ? "border-red-400 bg-red-50" : "border-neutral-300 bg-white hover:bg-neutral-50"
+                              form.formState.errors.file
+                                ? "border-red-400 bg-red-50"
+                                : "border-neutral-300 bg-white hover:bg-neutral-50"
                             }`}
                             onClick={() => fileInputRef.current?.click()}
                           >
@@ -204,14 +217,18 @@ export function EditMateri({ open, setOpen, material }) {
                               ref={fileInputRef}
                               onChange={(e) => handleFileChange(e, field)}
                             />
-                            
+
                             {fileName ? (
                               <div className="flex flex-col items-center justify-center text-neutral-900 text-center p-4">
                                 <div className="p-2 bg-neutral-900 text-white rounded-full mb-2 shadow-sm">
                                   <UploadCloud className="w-5 h-5" />
                                 </div>
-                                <p className="text-sm font-semibold truncate max-w-[200px]">{fileName}</p>
-                                <p className="text-[11px] text-neutral-500 mt-1">Siap diunggah menggantikan file lama</p>
+                                <p className="text-sm font-semibold truncate max-w-[200px]">
+                                  {fileName}
+                                </p>
+                                <p className="text-[11px] text-neutral-500 mt-1">
+                                  Siap diunggah menggantikan file lama
+                                </p>
                               </div>
                             ) : (
                               <div className="flex flex-col items-center justify-center text-neutral-500 space-y-2">
@@ -219,8 +236,12 @@ export function EditMateri({ open, setOpen, material }) {
                                   <UploadCloud className="w-5 h-5 text-neutral-400" />
                                 </div>
                                 <div className="text-center">
-                                  <p className="text-sm font-medium text-neutral-700">Klik untuk memilih file baru</p>
-                                  <p className="text-[10px] mt-1 text-neutral-400">Akan menimpa file materi saat ini</p>
+                                  <p className="text-sm font-medium text-neutral-700">
+                                    Klik untuk memilih file baru
+                                  </p>
+                                  <p className="text-[10px] mt-1 text-neutral-400">
+                                    Akan menimpa file materi saat ini
+                                  </p>
                                 </div>
                               </div>
                             )}
@@ -233,24 +254,30 @@ export function EditMateri({ open, setOpen, material }) {
 
                   {/* INFO FILE LAMA / URL LAMA */}
                   {!fileName && material?.fileUrl && (
-                     <div className="flex items-center gap-3 p-3 bg-white border border-neutral-200 rounded-xl shadow-sm">
-                       <div className="p-2 bg-neutral-100 rounded-lg text-neutral-500 shrink-0">
-                         {isUrl ? <LinkIcon className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
-                       </div>
-                       <div className="flex-1 min-w-0">
-                         <p className="text-xs text-neutral-500 font-medium mb-0.5">
-                           {isUrl ? "Tautan URL Saat Ini" : "File Saat Ini"}
-                         </p>
-                         <a 
-                           href={material.fileUrl} 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           className="text-sm font-semibold text-neutral-900 hover:underline truncate block"
-                         >
-                           {isUrl ? material.fileUrl : material.fileUrl.split("/").pop()}
-                         </a>
-                       </div>
-                     </div>
+                    <div className="flex items-center gap-3 p-3 bg-white border border-neutral-200 rounded-xl shadow-sm">
+                      <div className="p-2 bg-neutral-100 rounded-lg text-neutral-500 shrink-0">
+                        {isUrl ? (
+                          <LinkIcon className="w-5 h-5" />
+                        ) : (
+                          <FileText className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-neutral-500 font-medium mb-0.5">
+                          {isUrl ? "Tautan URL Saat Ini" : "File Saat Ini"}
+                        </p>
+                        <a
+                          href={material.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-semibold text-neutral-900 hover:underline truncate block"
+                        >
+                          {isUrl
+                            ? material.fileUrl
+                            : material.fileUrl.split("/").pop()}
+                        </a>
+                      </div>
+                    </div>
                   )}
 
                   {/* JUDUL MATERI */}
@@ -259,9 +286,15 @@ export function EditMateri({ open, setOpen, material }) {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">Judul Materi</FormLabel>
+                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                          Judul Materi
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Masukkan judul..." {...field} className={inputStyles} />
+                          <Input
+                            placeholder="Masukkan judul..."
+                            {...field}
+                            className={inputStyles}
+                          />
                         </FormControl>
                         <FormMessage className="text-red-500 text-xs" />
                       </FormItem>
@@ -274,7 +307,9 @@ export function EditMateri({ open, setOpen, material }) {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">Deskripsi</FormLabel>
+                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                          Deskripsi
+                        </FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="Penjelasan singkat materi ini..."
@@ -291,7 +326,6 @@ export function EditMateri({ open, setOpen, material }) {
 
                 {/* KOLOM KANAN: KATEGORI & AKSES */}
                 <div className="space-y-6">
-                  
                   {/* TIPE & KATEGORI */}
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -299,8 +333,13 @@ export function EditMateri({ open, setOpen, material }) {
                       name="type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">Format Materi</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Format Materi
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger className={inputStyles}>
                                 <SelectValue placeholder="Pilih tipe" />
@@ -322,19 +361,28 @@ export function EditMateri({ open, setOpen, material }) {
                       name="category"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">Kategori Topik</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Kategori Topik
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger className={inputStyles}>
                                 <SelectValue placeholder="Pilih kategori" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="bg-white border-neutral-200 text-neutral-900 rounded-xl shadow-md">
-                              <SelectItem value="teknik_dasar">Teknik Dasar</SelectItem>
+                              <SelectItem value="teknik_dasar">
+                                Teknik Dasar
+                              </SelectItem>
                               <SelectItem value="jurus">Jurus</SelectItem>
                               <SelectItem value="sejarah">Sejarah</SelectItem>
                               <SelectItem value="teori">Teori</SelectItem>
-                              <SelectItem value="peraturan">Peraturan</SelectItem>
+                              <SelectItem value="peraturan">
+                                Peraturan
+                              </SelectItem>
                               <SelectItem value="lainnya">Lainnya</SelectItem>
                             </SelectContent>
                           </Select>
@@ -351,8 +399,13 @@ export function EditMateri({ open, setOpen, material }) {
                       name="sabuk"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">Minimal Tingkat Sabuk</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Minimal Tingkat Sabuk
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger className={inputStyles}>
                                 <SelectValue placeholder="Pilih tingkatan sabuk" />
@@ -376,16 +429,25 @@ export function EditMateri({ open, setOpen, material }) {
                       name="accessLevel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">Hak Akses</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Hak Akses
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger className={inputStyles}>
                                 <SelectValue placeholder="Pilih akses" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="bg-white border-neutral-200 text-neutral-900 rounded-xl shadow-md">
-                              <SelectItem value="anggota_only">Hanya Anggota</SelectItem>
-                              <SelectItem value="admin_only">Hanya Admin</SelectItem>
+                              <SelectItem value="anggota_only">
+                                Hanya Anggota
+                              </SelectItem>
+                              <SelectItem value="admin_only">
+                                Hanya Admin
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage className="text-red-500 text-xs" />
@@ -418,7 +480,6 @@ export function EditMateri({ open, setOpen, material }) {
                       </FormItem>
                     )}
                   />
-
                 </div>
               </div>
             </ScrollArea>
@@ -436,8 +497,8 @@ export function EditMateri({ open, setOpen, material }) {
                   Batal
                 </Button>
               </DialogClose>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isLoading}
                 className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg shadow-sm font-medium px-6 transition-colors min-w-[150px]"
               >
