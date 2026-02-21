@@ -15,7 +15,7 @@ export const FoundersTable = () => {
     queryFn: getFounders,
   });
 
-  const founders = data?.data?.data || [];
+  const founders = data?.data || [];
 
   // Client-side filtering as the API might not support search on this endpoint yet
   // or it returns all data which is fine for a small list

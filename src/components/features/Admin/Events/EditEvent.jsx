@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useEffect, useRef } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -36,14 +40,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, PencilLine, Loader2, UploadCloud } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateEvent } from "@/lib/api/event";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 
+// Format helper
 const formatNumber = (value) => {
   if (!value) return "";
   return new Intl.NumberFormat("id-ID").format(value);
@@ -68,6 +74,7 @@ const parseCurrencyInput = (input) => {
   return isNaN(number) ? "" : number * multiplier;
 };
 
+// Skema Validasi
 const formSchema = z
   .object({
     title: z.string().min(1, "Judul harus diisi"),
@@ -90,6 +97,7 @@ const formSchema = z
     status: z
       .enum(["draft", "published", "ongoing", "completed", "cancelled"])
       .default("draft"),
+    image: z.any().optional(),
   })
   .refine(
     (data) => {
@@ -104,8 +112,14 @@ const formSchema = z
     },
   );
 
+// Konstanta kelas untuk input konsisten
+const inputStyles =
+  "bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
+
 export function EditEvent({ open, setOpen, event }) {
   const queryClient = useQueryClient();
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = useRef(null);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -118,10 +132,11 @@ export function EditEvent({ open, setOpen, event }) {
       isFree: true,
       price: "",
       status: "draft",
+      image: null,
     },
   });
 
-  const isFree = form.watch("isFree");
+  const isFree = useWatch({ control: form.control, name: "isFree" });
 
   useEffect(() => {
     if (event) {
@@ -136,7 +151,9 @@ export function EditEvent({ open, setOpen, event }) {
         isFree: event.isFree,
         price: event.price?.toString() || "",
         status: event.status || "draft",
+        image: null,
       });
+      setPreviewUrl(null); // Reset preview url
     }
   }, [event, form]);
 
@@ -145,7 +162,7 @@ export function EditEvent({ open, setOpen, event }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       toast.success("Event berhasil diperbarui");
-      setOpen(false);
+      closeDialog();
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Gagal memperbarui event");
@@ -153,8 +170,6 @@ export function EditEvent({ open, setOpen, event }) {
   });
 
   const onSubmit = (values) => {
-    // Prepare data - ensure numbers are numbers if needed by backend, though strings often work
-    // For safety, converting conditional fields
     const payload = { ...values };
     if (values.isFree) {
       payload.price = 0;
@@ -162,289 +177,481 @@ export function EditEvent({ open, setOpen, event }) {
     if (values.eventDate) payload.eventDate = values.eventDate.toISOString();
     if (values.endDate) payload.endDate = values.endDate.toISOString();
 
-    updateMutation.mutate(payload);
+    const formData = new FormData();
+    Object.keys(payload).forEach((key) => {
+      if (
+        key !== "image" &&
+        payload[key] !== undefined &&
+        payload[key] !== null
+      ) {
+        formData.append(key, payload[key]);
+      }
+    });
+
+    if (values.image?.[0]) {
+      formData.append("image", values.image[0]);
+    }
+
+    updateMutation.mutate(formData);
   };
 
   const isLoading = updateMutation.isPending;
 
+  // Handler Dialog
+  const closeDialog = () => {
+    setOpen(false);
+    setTimeout(() => {
+      form.reset();
+      setPreviewUrl(null);
+    }, 300);
+  };
+
+  // Handler Preview Gambar
+  const handleFileChange = (e, field) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      field.onChange(e.target.files);
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
+    }
+  };
+
+  const displayImage = previewUrl || event?.imageUrl;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Event</DialogTitle>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => (!isOpen ? closeDialog() : setOpen(true))}
+    >
+      <DialogContent className="sm:max-w-3xl bg-white border-neutral-200 shadow-xl rounded-2xl max-h-[90vh] p-0 flex flex-col gap-0 overflow-hidden">
+        {/* HEADER */}
+        <DialogHeader className="p-6 border-b border-neutral-100 bg-neutral-50/50 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white rounded-lg ring-1 ring-neutral-200 shadow-sm">
+              <PencilLine className="w-5 h-5 text-neutral-600" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-semibold tracking-tight text-neutral-900">
+                Edit Event
+              </DialogTitle>
+              <DialogDescription className="text-sm text-neutral-500 mt-0.5">
+                Perbarui detail informasi agenda atau event ini.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Event</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Masukkan nama event" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="eventType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipe Event</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Pilih tipe" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent position="popper">
-                        <SelectItem value="seminar">Seminar</SelectItem>
-                        <SelectItem value="workshop">Workshop</SelectItem>
-                        <SelectItem value="conference">Conference</SelectItem>
-                        <SelectItem value="webinar">Webinar</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="capacity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kapasitas Peserta</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="eventDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Tanggal Mulai</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
+            <ScrollArea className="flex-1 px-6 py-6 custom-scrollbar bg-neutral-50/50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-4">
+                {/* KOLOM KIRI */}
+                <div className="space-y-6">
+                  {/* UPLOAD GAMBAR BANNER */}
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold mb-2 block">
+                          Banner Event (Opsional)
+                        </FormLabel>
                         <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
+                          <div
+                            className={`relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl transition-colors cursor-pointer overflow-hidden ${
+                              form.formState.errors.image
+                                ? "border-red-400 bg-red-50"
+                                : "border-neutral-300 bg-white hover:bg-neutral-50"
+                            }`}
+                            onClick={() => fileInputRef.current?.click()}
                           >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pilih tanggal</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              ref={fileInputRef}
+                              onChange={(e) => handleFileChange(e, field)}
+                            />
 
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Tanggal Selesai (Opsional)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
+                            {displayImage ? (
+                              <div className="relative w-full h-full group bg-white">
+                                <Image
+                                  src={displayImage}
+                                  alt="Preview Banner"
+                                  fill
+                                  className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                                  <UploadCloud className="w-6 h-6 text-white mb-2" />
+                                  <p className="text-white text-sm font-medium">
+                                    Ganti Banner
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center text-neutral-500 space-y-2">
+                                <div className="p-2 bg-neutral-50 rounded-full shadow-sm ring-1 ring-neutral-200">
+                                  <UploadCloud className="w-5 h-5 text-neutral-400" />
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-sm font-medium text-neutral-700">
+                                    Unggah Banner Baru
+                                  </p>
+                                  <p className="text-[11px] mt-1 text-neutral-400">
+                                    Rasio 16:9 direkomendasikan
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-red-500 text-xs text-center" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* JUDUL EVENT */}
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                          Nama Event
+                        </FormLabel>
                         <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pilih tanggal</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
+                          <Input
+                            placeholder="e.g. Kejuaraan Nasional 2026"
+                            {...field}
+                            className={inputStyles}
+                          />
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                        <FormMessage className="text-red-500 text-xs" />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status Event</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Pilih status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent position="popper">
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                      <SelectItem value="ongoing">Ongoing</SelectItem>
-                      <SelectItem value="completed">Selesai</SelectItem>
-                      <SelectItem value="cancelled">Dibatalkan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  {/* DESKRIPSI */}
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                          Deskripsi
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Jelaskan detail event ini..."
+                            className={`${inputStyles} resize-none`}
+                            rows={5}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500 text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Lokasi (Kosongkan jika Online)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nama gedung / alamat" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex flex-col gap-4 border p-4 rounded-lg">
-              <FormField
-                control={form.control}
-                name="isFree"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Event Gratis?</FormLabel>
-                      <FormDescription>
-                        Jika dinonaktifkan, Anda perlu mengatur harga tiket.
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {!isFree && (
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Harga Tiket (Rp)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="0"
-                          {...field}
-                          value={formatNumber(field.value)}
-                          onChange={(e) => {
-                            const inputValue = e.target.value;
-                            const rawValue = parseCurrencyInput(inputValue);
-                            field.onChange(rawValue.toString());
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Deskripsi</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Jelaskan detail event"
-                      className="resize-none h-32"
-                      {...field}
+                {/* KOLOM KANAN */}
+                <div className="space-y-6">
+                  {/* TIPE & KAPASITAS */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="eventType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Tipe Event
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className={inputStyles}>
+                                <SelectValue placeholder="Pilih tipe" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white border-neutral-200 text-neutral-900 rounded-xl shadow-md">
+                              <SelectItem value="seminar">Seminar</SelectItem>
+                              <SelectItem value="workshop">Workshop</SelectItem>
+                              <SelectItem value="conference">
+                                Conference
+                              </SelectItem>
+                              <SelectItem value="webinar">Webinar</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormField
+                      control={form.control}
+                      name="capacity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Kapasitas Peserta
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="Contoh: 100"
+                              {...field}
+                              className={inputStyles}
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-            {event?.imageUrl && (
-              <div className="relative w-full h-40 mt-2 bg-muted rounded-md overflow-hidden">
-                <Image
-                  src={event.imageUrl}
-                  alt="Event banner"
-                  fill
-                  className="object-cover"
-                />
+                  {/* TANGGAL */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="eventDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold mb-1">
+                            Tanggal Mulai
+                          </FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    inputStyles,
+                                    "pl-3 text-left font-normal",
+                                    !field.value && "text-neutral-400",
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pilih tanggal</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0 bg-white border-neutral-200 rounded-xl shadow-md"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold mb-1">
+                            Tanggal Selesai (Ops)
+                          </FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    inputStyles,
+                                    "pl-3 text-left font-normal",
+                                    !field.value && "text-neutral-400",
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pilih tanggal</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0 bg-white border-neutral-200 rounded-xl shadow-md"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* STATUS & LOKASI */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Status Event
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className={inputStyles}>
+                                <SelectValue placeholder="Pilih status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white border-neutral-200 text-neutral-900 rounded-xl shadow-md">
+                              <SelectItem value="draft">Draft</SelectItem>
+                              <SelectItem value="published">
+                                Published
+                              </SelectItem>
+                              <SelectItem value="ongoing">Ongoing</SelectItem>
+                              <SelectItem value="completed">Selesai</SelectItem>
+                              <SelectItem value="cancelled">
+                                Dibatalkan
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="location"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Lokasi
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Gedung / Online"
+                              {...field}
+                              className={inputStyles}
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* SWITCH & HARGA TIKET */}
+                  <div className="flex flex-col gap-4 p-4 bg-white border border-neutral-200 rounded-xl shadow-sm">
+                    <FormField
+                      control={form.control}
+                      name="isFree"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between">
+                          <div className="space-y-1">
+                            <FormLabel className="text-sm font-semibold text-neutral-900 cursor-pointer">
+                              Event Gratis?
+                            </FormLabel>
+                            <p className="text-xs text-neutral-500">
+                              Matikan untuk mengatur harga tiket masuk.
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              className="data-[state=checked]:bg-green-600"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    {!isFree && (
+                      <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <FormField
+                          control={form.control}
+                          name="price"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                                Harga Tiket (Rp)
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative flex items-center">
+                                  <span className="absolute left-3 text-neutral-500 font-medium text-sm">
+                                    Rp
+                                  </span>
+                                  <Input
+                                    placeholder="150.000"
+                                    className={`${inputStyles} pl-10 font-medium`}
+                                    {...field}
+                                    value={formatNumber(field.value)}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      const rawValue =
+                                        parseCurrencyInput(inputValue);
+                                      field.onChange(rawValue.toString());
+                                    }}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage className="text-red-500 text-xs" />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
+            </ScrollArea>
 
-            <div className="flex justify-end gap-2 pt-4">
+            {/* FOOTER */}
+            <div className="p-5 border-t border-neutral-100 bg-white flex justify-end gap-3 shrink-0">
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeDialog}
+                  disabled={isLoading}
+                  className="bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 rounded-lg transition-colors"
+                >
+                  Batal
+                </Button>
+              </DialogClose>
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
+                type="submit"
                 disabled={isLoading}
+                className="bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg shadow-sm font-medium px-6 transition-colors min-w-[150px]"
               >
-                Batal
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                ) : (
+                  "Simpan Perubahan"
+                )}
               </Button>
             </div>
           </form>

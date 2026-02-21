@@ -16,7 +16,7 @@ const MainDonasi = () => {
     queryFn: () => getCampaigns({ search: globalFilter }),
   });
 
-  const campaigns = data?.data?.data || [];
+  const campaigns = data?.data || [];
 
   return (
     <div>

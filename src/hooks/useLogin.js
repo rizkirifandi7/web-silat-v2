@@ -10,10 +10,7 @@ export const useLogin = () => {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: async ({ email, password }) => {
-      const response = await loginApi(email, password);
-      return response.data;
-    },
+    mutationFn: ({ email, password }) => loginApi(email, password),
     onSuccess: (data) => {
       const user = data.data;
       setAuth(user);

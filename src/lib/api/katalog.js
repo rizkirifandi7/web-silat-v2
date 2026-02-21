@@ -12,20 +12,12 @@ export const getProductById = async (id) => {
 
 // Create new product (admin)
 export const createProduct = async (formData) => {
-  return api.post("/products", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.post("/products", formData);
 };
 
 // Update product (admin)
 export const updateProduct = async (id, formData) => {
-  return api.patch(`/products/${id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.patch(`/products/${id}`, formData);
 };
 
 // Delete product (admin)

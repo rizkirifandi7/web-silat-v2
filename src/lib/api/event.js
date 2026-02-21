@@ -1,4 +1,4 @@
-import api from "../axios";
+import api from "@/lib/axios";
 
 // Get all events
 export const getEvents = async (params) => {
@@ -12,19 +12,15 @@ export const getEventById = async (id) => {
 
 // Create new event
 export const createEvent = async (formData) => {
-  return api.post("/events", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.post("/events", formData);
 };
 
 // Update event
 export const updateEvent = async (id, data) => {
-  return api.patch(`${"/events"}/${id}`, data);
+  return api.patch(`/events/${id}`, data);
 };
 
 // Delete event
 export const deleteEvent = async (id) => {
-  return api.delete(`${"/events"}/${id}`);
+  return api.delete(`/events/${id}`);
 };

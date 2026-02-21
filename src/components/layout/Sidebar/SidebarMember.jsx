@@ -4,8 +4,6 @@ import * as React from "react";
 import {
   IconDashboard,
   IconUser,
-  IconCalendarEvent,
-  IconHeartHandshake,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/layout/Sidebar/nav-main";
@@ -19,6 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import Link from "next/link";
+import { LibraryBig } from "lucide-react";
 
 const data = {
   navMain: [
@@ -30,7 +29,7 @@ const data = {
     {
       title: "Materi",
       url: "/member/materi",
-      icon: IconHeartHandshake,
+      icon: LibraryBig,
     },
     {
       title: "Profil",

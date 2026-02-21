@@ -40,11 +40,11 @@ const PageVerifyId = () => {
       try {
         const response = await verifyMember(id);
 
-        if (response.data.success) {
-          setMemberData(response.data.data);
+        if (response.success) {
+          setMemberData(response.data);
           setViewState(VIEW_STATE.SUCCESS);
           toast.success("Anggota Valid", {
-            description: `Berhasil memverifikasi ${response.data.data.nama || "anggota"}.`,
+            description: `Berhasil memverifikasi ${response.data.nama || "anggota"}.`,
           });
         } else {
           throw new Error("Data tidak valid.");

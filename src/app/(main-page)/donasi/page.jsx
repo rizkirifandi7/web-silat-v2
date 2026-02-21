@@ -36,7 +36,7 @@ const DonasiPage = () => {
     queryFn: () => getCampaigns(),
   });
 
-  const campaigns = data?.data?.data || [];
+  const campaigns = data?.data || [];
 
   return (
     <main className="min-h-screen bg-background pb-20">

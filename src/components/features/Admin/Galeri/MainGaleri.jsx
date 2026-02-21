@@ -16,7 +16,7 @@ const MainGaleri = () => {
     queryFn: () => getGalleries({ search: globalFilter }),
   });
 
-  const galleries = data?.data?.data || [];
+  const galleries = data?.data || [];
 
   return (
     <div>
@@ -34,10 +34,7 @@ const MainGaleri = () => {
           />
           <AddGaleri />
         </div>
-        <DataTable
-          columns={columnsGaleri}
-          data={galleries}
-        />
+        <DataTable columns={columnsGaleri} data={galleries} />
       </div>
     </div>
   );

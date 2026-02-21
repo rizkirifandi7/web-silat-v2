@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getProfile } from "@/lib/api/auth";
+import { getProfile, logout as logoutApi } from "@/lib/api/auth";
 import Cookies from "js-cookie";
 
 const COOKIE_OPTIONS = {
@@ -28,11 +28,7 @@ const useAuthStore = create((set) => ({
 
   logout: async () => {
     try {
-      // Use the proxy path to reach the backend
-      await fetch("/api/proxy/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      await logoutApi();
     } catch {
       // Ignore errors — we still want to clear local state
     }
@@ -47,7 +43,7 @@ const useAuthStore = create((set) => ({
     set({ isLoading: true });
     try {
       const response = await getProfile();
-      const user = response.data.data || response.data;
+      const user = response.data || response;
 
       // Sync user_role cookie
       Cookies.set("user_role", user.role, COOKIE_OPTIONS);

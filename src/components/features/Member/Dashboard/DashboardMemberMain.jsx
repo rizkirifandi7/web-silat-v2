@@ -27,7 +27,7 @@ const DashboardMemberMain = () => {
   // Ambil materi dari backend
   const { data: materialsData, isLoading: loadingMaterials } = useQuery({
     queryKey: ["dashboard-materials"],
-    queryFn: () => getMaterials().then((res) => res.data.data || []),
+    queryFn: () => getMaterials().then((res) => res.data || []),
   });
   // Hitung progress belajar
   const totalMateri = materialsData?.length || 0;
@@ -69,7 +69,7 @@ const DashboardMemberMain = () => {
             <div className="text-3xl font-bold">{materiSelesai}</div>
           </CardContent>
         </Card>
-        <Card className={"shadow-none"} >
+        <Card className={"shadow-none"}>
           <CardHeader>
             <CardTitle>Status</CardTitle>
             <CardDescription>Keanggotaan</CardDescription>

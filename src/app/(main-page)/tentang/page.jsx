@@ -12,7 +12,7 @@ const TentangPage = () => {
     queryFn: getAboutInfo,
   });
 
-  const about = aboutResponse?.data?.data || null;
+  const about = aboutResponse?.data || null;
 
   if (isLoading) {
     return (

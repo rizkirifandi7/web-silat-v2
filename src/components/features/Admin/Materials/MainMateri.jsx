@@ -16,7 +16,7 @@ const MainMateri = () => {
     queryFn: () => getMaterials({ search: globalFilter }),
   });
 
-  const materials = data?.data?.data || [];
+  const materials = data?.data || [];
 
   return (
     <div>

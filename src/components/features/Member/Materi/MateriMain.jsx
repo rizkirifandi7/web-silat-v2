@@ -28,7 +28,7 @@ const MateriMain = () => {
     error: errorMaterials,
   } = useQuery({
     queryKey: ["materials"],
-    queryFn: () => getMaterials().then((res) => res.data.data || []),
+    queryFn: () => getMaterials().then((res) => res.data || []),
     onSuccess: (data) => {
       if (data && data.length > 0 && !selectedId) {
         setSelectedId(data[0].id);
@@ -44,9 +44,7 @@ const MateriMain = () => {
   } = useQuery({
     queryKey: ["material", selectedId],
     queryFn: () =>
-      selectedId
-        ? getMaterialById(selectedId).then((res) => res.data.data)
-        : null,
+      selectedId ? getMaterialById(selectedId).then((res) => res.data) : null,
     enabled: !!selectedId,
   });
 

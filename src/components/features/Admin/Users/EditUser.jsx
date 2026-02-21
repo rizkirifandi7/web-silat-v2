@@ -35,7 +35,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { updateUser } from "@/lib/api/users";
-import { getUserById } from "@/lib/api/getUserById";
+import { getUserById } from "@/lib/api/users";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Loader2, Pencil, Shield, User, Medal } from "lucide-react";
@@ -98,7 +98,7 @@ export function EditUser({ user }) {
   const userId = user?.id;
   const { data: userDetail, isLoading } = useQuery({
     queryKey: ["user-detail-edit", userId],
-    queryFn: () => getUserById(userId).then((res) => res.data.data),
+    queryFn: () => getUserById(userId).then((res) => res.data),
     enabled: open && !!userId,
   });
 

@@ -47,21 +47,21 @@ const EventDetailPage = () => {
     enabled: !!id,
   });
 
-  const event = eventResponse?.data?.data || null;
+  const event = eventResponse?.data || null;
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (data) => api.post("/registrations", data),
     onSuccess: (res) => {
       // Jika event berbayar dan butuh pembayaran, jangan langsung sukses, tampilkan UI pembayaran
-      if (res?.data?.requiresPayment) {
+      if (res?.requiresPayment) {
         toast.info("Ini adalah event berbayar. Silakan lakukan pembayaran.");
         setIsRegisterOpen(true);
-      } else if (res?.data?.success) {
+      } else if (res?.success) {
         toast.success("Pendaftaran berhasil!");
         setIsRegisterOpen(true);
       } else {
-        toast.error(res?.data?.message || "Gagal mendaftar event.");
+        toast.error(res?.message || "Gagal mendaftar event.");
       }
     },
     onError: (error) => {
@@ -346,14 +346,10 @@ const EventDetailPage = () => {
         <DialogContent className="sm:max-w-[500px] rounded-none border-2 border-zinc-200">
           {/* Jika pendaftaran sukses dan tidak butuh pembayaran, atau dialog konfirmasi awal */}
           {!mutation.isSuccess ||
-          (mutation.data &&
-            mutation.data.data &&
-            mutation.data.data.requiresPayment) ? (
+          (mutation.data && mutation.data.requiresPayment) ? (
             <>
               {/* Jika sudah submit dan butuh pembayaran, tampilkan UI pembayaran */}
-              {mutation.data &&
-              mutation.data.data &&
-              mutation.data.data.requiresPayment ? (
+              {mutation.data && mutation.data.requiresPayment ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
                   <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-4 border-2 border-yellow-600">
                     <Loader2 className="w-8 h-8 animate-pulse" />
@@ -362,7 +358,7 @@ const EventDetailPage = () => {
                     Pembayaran Diperlukan
                   </DialogTitle>
                   <DialogDescription className="text-center max-w-xs mx-auto">
-                    {mutation.data.data.message ||
+                    {mutation.data.message ||
                       "Ini adalah event berbayar. Silakan lakukan pembayaran untuk melanjutkan."}
                   </DialogDescription>
                   {/* Tombol bayar, bisa diarahkan ke payment gateway atau popup pembayaran */}

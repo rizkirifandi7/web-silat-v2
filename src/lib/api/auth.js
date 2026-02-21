@@ -15,3 +15,7 @@ export const getProfile = async () => {
 export const verifyToken = async () => {
   return api.get("/auth/verify");
 };
+
+export const logout = async () => {
+  return api.post("/auth/logout");
+};

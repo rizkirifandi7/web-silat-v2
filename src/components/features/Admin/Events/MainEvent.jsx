@@ -17,7 +17,7 @@ export const MainEvent = () => {
     queryFn: () => getEvents({ search: globalFilter }),
   });
 
-  const events = data?.data?.data || [];
+  const events = data?.data || [];
 
   return (
     <div className="space-y-4">

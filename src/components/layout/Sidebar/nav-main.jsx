@@ -8,8 +8,11 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function NavMain({ items }) {
+  const pathname = usePathname();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent>
@@ -19,6 +22,7 @@ export function NavMain({ items }) {
               <Link href={item.url}>
                 <SidebarMenuButton
                   tooltip={item.title}
+                  isActive={pathname.startsWith(item.url)}
                   className={"font-medium text-sm"}
                 >
                   {item.icon && <item.icon />}

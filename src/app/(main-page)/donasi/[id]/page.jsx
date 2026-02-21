@@ -59,7 +59,7 @@ const DonasiDetailPage = () => {
     enabled: !!id,
   });
 
-  const campaign = campaignResponse?.data?.data || null;
+  const campaign = campaignResponse?.data || null;
   const progress = campaign ? campaign.percentageReached || 0 : 0;
 
   const [donationAmount, setDonationAmount] = useState("");
@@ -70,12 +70,10 @@ const DonasiDetailPage = () => {
   });
   const [isDonateOpen, setIsDonateOpen] = useState(false);
 
-  
-
   const mutation = useMutation({
     mutationFn: submitDonation,
     onSuccess: (response) => {
-      const { midtransToken } = response.data.data;
+      const { midtransToken } = response.data;
       if (window.snap) {
         setIsDonateOpen(false);
         window.snap.pay(midtransToken, {
@@ -109,11 +107,11 @@ const DonasiDetailPage = () => {
   });
 
   // Reset mutation state when dialog is opened
-useEffect(() => {
-  if (isDonateOpen && mutation.isSuccess) {
-    mutation.reset();
-  }
-}, [isDonateOpen]);
+  useEffect(() => {
+    if (isDonateOpen && mutation.isSuccess) {
+      mutation.reset();
+    }
+  }, [isDonateOpen]);
 
   // Quick preset handler
   const handlePresetClick = (amount) => {

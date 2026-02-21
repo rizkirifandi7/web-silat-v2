@@ -1,28 +1,21 @@
-import api from "../axios";
-
-export const params = {
-  page: 1,
-  limit: 10,
-  search: "",
-  role: "",
-};
+import api from "@/lib/axios";
 
 export const getUsers = async (params) => {
-  const response = await api.get("/users", { params });
-  return response.data;
+  return api.get("/users", { params });
+};
+
+export const getUserById = async (id) => {
+  return api.get(`/users/${id}`);
 };
 
 export const createUser = async (data) => {
-  const response = await api.post("/users", data);
-  return response.data;
+  return api.post("/users", data);
 };
 
 export const updateUser = async (id, data) => {
-  const response = await api.patch(`/users/${id}`, data);
-  return response.data;
+  return api.patch(`/users/${id}`, data);
 };
 
 export const deleteUser = async (id) => {
-  const response = await api.delete(`/users/${id}`);
-  return response.data;
+  return api.delete(`/users/${id}`);
 };

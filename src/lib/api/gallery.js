@@ -12,11 +12,7 @@ export const getGalleryById = async (id) => {
 
 // Create new photo (admin/anggota)
 export const createGallery = async (formData) => {
-  return api.post("/gallery", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.post("/gallery", formData);
 };
 
 // Update photo (admin/owner)

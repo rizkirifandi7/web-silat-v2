@@ -79,7 +79,7 @@ const EventsPage = () => {
       }),
   });
 
-  const events = eventsResponse?.data?.data || [];
+  const events = eventsResponse?.data || [];
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("id-ID", {

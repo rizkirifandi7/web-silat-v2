@@ -43,7 +43,7 @@ const GaleriPage = () => {
       }),
   });
 
-  const rawItems = galleryData?.data?.data || [];
+  const rawItems = galleryData?.data || [];
 
   const galleryItems = rawItems.map((item) => ({
     id: item.id,

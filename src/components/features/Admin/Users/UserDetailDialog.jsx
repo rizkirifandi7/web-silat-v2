@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getUserById } from "@/lib/api/getUserById";
+import { getUserById } from "@/lib/api/users";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -65,7 +65,7 @@ export default function UserDetailDialog({ user }) {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["user-detail", userId],
-    queryFn: () => getUserById(userId).then((res) => res.data.data),
+    queryFn: () => getUserById(userId).then((res) => res.data),
     enabled: open && !!userId,
   });
 

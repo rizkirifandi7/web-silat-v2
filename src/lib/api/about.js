@@ -7,11 +7,7 @@ export const getAboutInfo = async () => {
 
 // Update about info
 export const updateAboutInfo = async (formData) => {
-  return api.patch("/about", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.patch("/about", formData);
 };
 
 // Get founders
@@ -21,20 +17,12 @@ export const getFounders = async () => {
 
 // Create founder
 export const createFounder = async (formData) => {
-  return api.post("/about/founders", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.post("/about/founders", formData);
 };
 
 // Update founder
 export const updateFounder = async (id, formData) => {
-  return api.patch(`/about/founders/${id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.patch(`/about/founders/${id}`, formData);
 };
 
 // Delete founder

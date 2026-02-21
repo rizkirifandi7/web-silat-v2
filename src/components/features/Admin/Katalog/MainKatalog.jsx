@@ -16,7 +16,7 @@ const MainKatalog = () => {
     queryFn: () => getProducts({ search: globalFilter }),
   });
 
-  const products = data?.data?.data || [];
+  const products = data?.data || [];
 
   return (
     <div>

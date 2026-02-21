@@ -62,7 +62,7 @@ const KatalogPage = () => {
       getProducts({ kategori: activeCategory, search: searchQuery }),
   });
 
-  const products = data?.data?.data || [];
+  const products = data?.data || [];
 
   return (
     <main className="min-h-screen bg-background pb-20">

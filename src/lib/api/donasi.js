@@ -12,11 +12,7 @@ export const getCampaignById = async (id) => {
 
 // Create new campaign
 export const createCampaign = async (formData) => {
-  return api.post("/donations/campaigns", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  return api.post("/donations/campaigns", formData);
 };
 
 // Update campaign
@@ -28,6 +24,7 @@ export const updateCampaign = async (id, data) => {
 export const deleteCampaign = async (id) => {
   return api.delete(`/donations/campaigns/${id}`);
 };
+
 // Submit a new donation
 export const submitDonation = async (data) => {
   return api.post("/donations", data);
