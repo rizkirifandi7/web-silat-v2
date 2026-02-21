@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Upload, Link } from "lucide-react";
 import { useState } from "react";
 
 import { useForm } from "react-hook-form";
@@ -58,10 +58,12 @@ const formSchema = z.object({
   }),
   isActive: z.boolean().default(true),
   file: z.any().optional(),
+  fileUrl: z.string().optional(),
 });
 
 export function AddMateri() {
   const [open, setOpen] = useState(false);
+  const [sourceType, setSourceType] = useState("file"); // "file" or "url"
   const queryClient = useQueryClient();
 
   const form = useForm({
@@ -75,6 +77,7 @@ export function AddMateri() {
       accessLevel: "anggota_only",
       isActive: true,
       file: null,
+      fileUrl: "",
     },
   });
 
@@ -87,6 +90,7 @@ export function AddMateri() {
       toast.success("Materi berhasil ditambahkan");
       setOpen(false);
       form.reset();
+      setSourceType("file");
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Gagal menambahkan materi");
@@ -94,22 +98,49 @@ export function AddMateri() {
   });
 
   const onSubmit = (values) => {
-    if (!values.file?.[0]) {
-      form.setError("file", { message: "File wajib diunggah" });
-      return;
+    if (sourceType === "file") {
+      if (!values.file?.[0]) {
+        form.setError("file", { message: "File wajib diunggah" });
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("title", values.title);
+      formData.append("description", values.description || "");
+      formData.append("type", values.type);
+      formData.append("category", values.category);
+      formData.append("sabuk", values.sabuk);
+      formData.append("accessLevel", values.accessLevel);
+      formData.append("isActive", values.isActive);
+      formData.append("file", values.file[0]);
+
+      createMutation.mutate(formData);
+    } else {
+      // URL mode
+      if (!values.fileUrl || values.fileUrl.trim() === "") {
+        form.setError("fileUrl", { message: "URL wajib diisi" });
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("title", values.title);
+      formData.append("description", values.description || "");
+      formData.append("type", values.type);
+      formData.append("category", values.category);
+      formData.append("sabuk", values.sabuk);
+      formData.append("accessLevel", values.accessLevel);
+      formData.append("isActive", values.isActive);
+      formData.append("fileUrl", values.fileUrl.trim());
+
+      createMutation.mutate(formData);
     }
+  };
 
-    const formData = new FormData();
-    formData.append("title", values.title);
-    formData.append("description", values.description || "");
-    formData.append("type", values.type);
-    formData.append("category", values.category);
-    formData.append("sabuk", values.sabuk);
-    formData.append("accessLevel", values.accessLevel);
-    formData.append("isActive", values.isActive);
-    formData.append("file", values.file[0]);
-
-    createMutation.mutate(formData);
+  const handleSourceTypeChange = (type) => {
+    setSourceType(type);
+    // Clear errors when switching
+    form.clearErrors("file");
+    form.clearErrors("fileUrl");
   };
 
   const isLoading = createMutation.isPending;
@@ -276,29 +307,84 @@ export function AddMateri() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="file"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>File Materi</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.avi,.jpg,.jpeg,.png"
-                      {...fileRef}
-                      onChange={(e) => {
-                        field.onChange(e.target.files);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Format yang didukung: PDF, Office, Video, Gambar
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Source Type Toggle */}
+            <div className="space-y-3">
+              <FormLabel>Sumber Materi</FormLabel>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={sourceType === "file" ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => handleSourceTypeChange("file")}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload File
+                </Button>
+                <Button
+                  type="button"
+                  variant={sourceType === "url" ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => handleSourceTypeChange("url")}
+                >
+                  <Link className="mr-2 h-4 w-4" />
+                  URL Link
+                </Button>
+              </div>
+            </div>
+
+            {/* File Upload */}
+            {sourceType === "file" && (
+              <FormField
+                control={form.control}
+                name="file"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>File Materi</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.avi,.jpg,.jpeg,.png"
+                        {...fileRef}
+                        onChange={(e) => {
+                          field.onChange(e.target.files);
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Format yang didukung: PDF, Office, Video, Gambar
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* URL Input */}
+            {sourceType === "url" && (
+              <FormField
+                control={form.control}
+                name="fileUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL Materi</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="url"
+                        placeholder="https://contoh.com/materi-video"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Masukkan URL file atau video (contoh: YouTube, Google
+                      Drive, dll.)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}

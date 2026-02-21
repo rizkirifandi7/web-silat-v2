@@ -11,11 +11,12 @@ export const getMaterialById = async (id) => {
 };
 
 // Create new material (admin)
-export const createMaterial = async (formData) => {
-  return api.post("/materials", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+export const createMaterial = async (data) => {
+  const isFormData = data instanceof FormData;
+  return api.post("/materials", data, {
+    headers: isFormData
+      ? { "Content-Type": "multipart/form-data" }
+      : { "Content-Type": "application/json" },
   });
 };
 

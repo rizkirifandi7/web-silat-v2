@@ -27,8 +27,8 @@ export function NavUser({ user }) {
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push("/login");
   };
 
