@@ -16,6 +16,32 @@ import {
   MonitorPlay,
 } from "lucide-react";
 
+// Helper: convert YouTube URL to embed format
+function toEmbedUrl(url) {
+  if (!url) return url;
+  try {
+    const urlObj = new URL(url);
+    // youtube.com/watch?v=VIDEO_ID
+    if (
+      (urlObj.hostname === "www.youtube.com" ||
+        urlObj.hostname === "youtube.com") &&
+      urlObj.pathname === "/watch"
+    ) {
+      const videoId = urlObj.searchParams.get("v");
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+    }
+    // youtu.be/VIDEO_ID
+    if (urlObj.hostname === "youtu.be") {
+      const videoId = urlObj.pathname.slice(1);
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+    }
+    // already embed or other URL — pass through
+    return url;
+  } catch {
+    return url;
+  }
+}
+
 const MateriMain = () => {
   const [selectedId, setSelectedId] = useState(null);
   const user = useAuthStore((state) => state.user);
@@ -119,7 +145,8 @@ const MateriMain = () => {
                 selectedMaterial.type === "pdf") &&
               selectedMaterial.fileUrl ? (
                 <iframe
-                  src={selectedMaterial.fileUrl}
+                  key={selectedMaterial.id}
+                  src={toEmbedUrl(selectedMaterial.fileUrl)}
                   title={selectedMaterial.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen

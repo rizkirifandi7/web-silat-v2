@@ -134,17 +134,19 @@ export function AddMateri() {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("title", values.title);
-      formData.append("description", values.description || "");
-      formData.append("type", values.type);
-      formData.append("category", values.category);
-      formData.append("sabuk", values.sabuk);
-      formData.append("accessLevel", values.accessLevel);
-      formData.append("isActive", values.isActive);
-      formData.append("fileUrl", values.fileUrl.trim());
+      // Kirim sebagai JSON, bukan FormData, agar backend tidak meminta file
+      const payload = {
+        title: values.title,
+        description: values.description || "",
+        type: values.type,
+        category: values.category,
+        sabuk: values.sabuk,
+        accessLevel: values.accessLevel,
+        isActive: values.isActive,
+        fileUrl: values.fileUrl.trim(),
+      };
 
-      createMutation.mutate(formData);
+      createMutation.mutate(payload);
     }
   };
 

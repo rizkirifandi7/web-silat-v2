@@ -12,7 +12,10 @@ export const getMaterialById = async (id) => {
 
 // Create new material (admin)
 export const createMaterial = async (data) => {
-  return api.post("/materials", data);
+  const isFormData = data instanceof FormData;
+  return api.post("/materials", data, {
+    headers: isFormData ? { "Content-Type": "multipart/form-data" } : undefined,
+  });
 };
 
 // Update material (admin)
