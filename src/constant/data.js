@@ -4,8 +4,8 @@ export const URUTAN_SABUK = [
   "Sabuk Hitam Wiraga 1", // Index 2
   "Sabuk Hitam Wiraga 2", // Index 3
   "Sabuk Hitam Wiraga 3", // Index 4
-  "Sabuk Putih", // Index 5
-  "Sabuk Kuning", // Index 6
-  "Sabuk Hijau", // Index 7
-  "Sabuk Merah", // Index 8
+  "Sabuk Hijau", // Index 5
+  "Sabuk Merah", // Index 6
+  "Sabuk Putih", // Index 7
+  "Sabuk Kuning", // Index 8
 ];

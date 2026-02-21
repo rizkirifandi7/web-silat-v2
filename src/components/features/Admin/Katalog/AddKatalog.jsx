@@ -155,7 +155,7 @@ export function AddKatalog() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex-1 flex flex-col overflow-hidden"
           >
-            <ScrollArea className="flex-1 px-6 py-6 custom-scrollbar">
+            <ScrollArea className="flex-1 px-6 py-6 custom-scrollbar overflow-y-auto">
               <div className="space-y-6 pb-2">
                 {/* UPLOAD GAMBAR */}
                 <FormField

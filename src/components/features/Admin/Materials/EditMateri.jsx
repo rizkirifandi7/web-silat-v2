@@ -173,7 +173,7 @@ export function EditMateri({ open, setOpen, material }) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden">
-            <ScrollArea className="flex-1 px-6 py-6 custom-scrollbar bg-neutral-50/50">
+            <ScrollArea className="flex-1 px-6 py-6 custom-scrollbar bg-neutral-50/50 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-4">
                 
                 {/* KOLOM KIRI */}
