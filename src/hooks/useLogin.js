@@ -3,7 +3,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { login as loginApi } from "@/lib/api/auth";
 import useAuthStore from "@/store/useAuthStore";
-import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 
 export const useLogin = () => {

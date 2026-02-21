@@ -68,7 +68,7 @@ export const columns = [
     id: "actions",
     cell: ({ row }) => {
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-end justify-end gap-2">
           <UserDetailDialog user={row.original} />
           <EditUser user={row.original} />
           <DeleteUser user={row.original} />

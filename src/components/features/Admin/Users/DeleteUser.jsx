@@ -42,9 +42,9 @@ export function DeleteUser({ user }) {
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+          variant="outline"
+          size="sm"
+          className="hover:text-destructive/90 hover:bg-destructive/10"
         >
           <Trash2 className="h-4 w-4" />
         </Button>

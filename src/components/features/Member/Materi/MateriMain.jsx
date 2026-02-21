@@ -8,8 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import useAuthStore from "@/store/useAuthStore";
-import Cookies from "js-cookie";
-import { URUTAN_SABUK } from "@/components/features/Admin/Materials/AddMateri";
+import { URUTAN_SABUK } from "@/constant/data";
 
 const MateriMain = () => {
   const [selectedId, setSelectedId] = useState(null);

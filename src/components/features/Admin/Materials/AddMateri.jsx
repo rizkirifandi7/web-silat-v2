@@ -36,18 +36,7 @@ import { Switch } from "@/components/ui/switch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMaterial } from "@/lib/api/materi";
 import { toast } from "sonner";
-
-export const URUTAN_SABUK = [
-  "Belum punya",           // Index 0 - Terendah (tidak bisa akses apapun)
-  "LULUS Binfistal",       // Index 1
-  "Sabuk Putih",           // Index 2
-  "Sabuk Kuning",          // Index 3
-  "Sabuk Hijau",           // Index 4
-  "Sabuk Merah",           // Index 5
-  "Sabuk Hitam Wiraga 1",  // Index 6
-  "Sabuk Hitam Wiraga 2",  // Index 7
-  "Sabuk Hitam Wiraga 3",  // Index 8 - Tertinggi
-];
+import { URUTAN_SABUK } from "@/constant/data";
 
 const formSchema = z.object({
   title: z.string().min(1, "Judul harus diisi"),
@@ -230,7 +219,9 @@ export function AddMateri() {
                       </FormControl>
                       <SelectContent position="popper">
                         {URUTAN_SABUK.map((sabuk) => (
-                          <SelectItem key={sabuk} value={sabuk}>{sabuk}</SelectItem>
+                          <SelectItem key={sabuk} value={sabuk}>
+                            {sabuk}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

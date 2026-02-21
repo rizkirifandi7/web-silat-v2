@@ -5,7 +5,7 @@ const nextConfig = {
     return [
       {
         source: "/api/proxy/:path*",
-        destination: "https://api.pusamadaind.com/api/:path*",
+        destination: "http://localhost:8015/api/:path*", // Proxy to Backend
       },
     ];
   },

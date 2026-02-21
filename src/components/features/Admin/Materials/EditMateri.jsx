@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { URUTAN_SABUK } from "./AddMateri";
+import { URUTAN_SABUK } from "@/constant/data";
 import {
   Form,
   FormControl,
