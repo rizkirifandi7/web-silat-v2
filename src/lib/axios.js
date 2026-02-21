@@ -14,11 +14,11 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         Cookies.remove("user_role", { path: "/" });
-        // Jangan redirect kalau sudah di halaman login/register
-        const isAuthPage =
-          window.location.pathname === "/login" ||
-          window.location.pathname === "/register";
-        if (!isAuthPage) {
+        // Hanya redirect ke login jika di halaman protected (admin/member)
+        const pathname = window.location.pathname;
+        const isProtectedRoute =
+          pathname.startsWith("/admin") || pathname.startsWith("/member");
+        if (isProtectedRoute) {
           window.location.href = "/login";
         }
       }
