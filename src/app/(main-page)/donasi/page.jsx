@@ -33,7 +33,7 @@ const formatCurrency = (amount) => {
 const DonasiPage = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["campaigns"],
-    queryFn: () => getCampaigns(),
+    queryFn: () => getCampaigns({ status: "active" }),
   });
 
   const campaigns = data?.data || [];

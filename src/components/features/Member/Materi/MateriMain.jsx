@@ -56,6 +56,7 @@ const MateriMain = () => {
     queryKey: ["materials"],
     queryFn: () => getMaterials().then((res) => res.data || []),
     onSuccess: (data) => {
+      console.log("Material Data onSuccess:", data);
       if (data && data.length > 0 && !selectedId) {
         setSelectedId(data[0].id);
       }
@@ -92,8 +93,13 @@ const MateriMain = () => {
 
   // Ambil sabuk anggota dari user. Fallback ke terendah jika tidak ada/invalid
   const anggotaSabuk =
-    user?.anggotaSilat?.tingkatan_sabuk || user?.tingkatan_sabuk;
+    user?.anggotaSilat?.tingkatan_sabuk ||
+    user?.tingkatan_sabuk ||
+    "Belum punya";
   const anggotaSabukIdx = getSabukIndex(anggotaSabuk);
+
+  console.log("SABUK USER:", anggotaSabuk, "IDX:", anggotaSabukIdx);
+  console.log("MATERIALS DATA RENDER:", materialsData);
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 w-full lg:h-[calc(100vh-8rem)] min-h-screen lg:min-h-0">
@@ -142,7 +148,8 @@ const MateriMain = () => {
             {/* Iframe Container */}
             <div className="relative flex-1 bg-neutral-900 w-full">
               {(selectedMaterial.type === "video" ||
-                selectedMaterial.type === "pdf") &&
+                selectedMaterial.type === "pdf" ||
+                selectedMaterial.type === "document") &&
               selectedMaterial.fileUrl ? (
                 <iframe
                   key={selectedMaterial.id}
@@ -153,8 +160,23 @@ const MateriMain = () => {
                   className="absolute inset-0 w-full h-full border-0"
                 />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-neutral-400 font-medium">
-                  Tautan konten tidak tersedia.
+                <div className="absolute inset-0 flex items-center justify-center text-neutral-400 font-medium bg-neutral-800">
+                  <div className="text-center p-4">
+                    <FileText className="w-10 h-10 mx-auto text-neutral-500 mb-2" />
+                    <p>
+                      Materi tidak dapat ditampilkan pratinjaunya secara
+                      langsung.
+                    </p>
+                    <a
+                      href={selectedMaterial.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 font-medium hover:underline text-sm mt-2 block"
+                    >
+                      Klik di sini untuk membuka/mengunduh{" "}
+                      {selectedMaterial.type}
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
@@ -229,7 +251,9 @@ const MateriMain = () => {
                       </p>
                       <p className="text-[11px] text-neutral-500 mt-0.5 capitalize flex items-center gap-1.5">
                         <span className="font-semibold text-neutral-400">
-                          {mat.type || "Materi"}
+                          {mat.type === "document"
+                            ? "Dokumen (PDF)"
+                            : mat.type || "Materi"}
                         </span>
                         {terkunci && (
                           <span className="text-red-500 font-medium">

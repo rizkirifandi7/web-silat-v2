@@ -71,7 +71,7 @@ const formSchema = z.object({
 
 // Konstanta style input
 const inputStyles =
-  "bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
+  "w-full bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
 
 export function EditMateri({ open, setOpen, material }) {
   const queryClient = useQueryClient();

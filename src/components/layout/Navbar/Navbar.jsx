@@ -22,6 +22,8 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const isDarkHeaderPage =
+    pathname.startsWith("/donasi/") || pathname.startsWith("/events/");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,7 +59,9 @@ const Navbar = () => {
                 "font-black text-base md:text-lg tracking-tighter leading-none transition-colors",
                 isScrolled
                   ? "text-foreground"
-                  : "text-foreground md:text-black md:drop-shadow-md",
+                  : isDarkHeaderPage
+                    ? "text-white drop-shadow-md"
+                    : "text-foreground md:text-black md:drop-shadow-md",
               )}
             >
               PUSAMADA
@@ -67,7 +71,9 @@ const Navbar = () => {
                 "text-[0.6rem] md:text-xs font-bold tracking-[0.2em] uppercase opacity-80",
                 isScrolled
                   ? "text-muted-foreground"
-                  : "text-muted-foreground md:text-black/80",
+                  : isDarkHeaderPage
+                    ? "text-white/80"
+                    : "text-muted-foreground md:text-black/80",
               )}
             >
               Indonesia
@@ -87,7 +93,9 @@ const Navbar = () => {
                   ? "text-primary"
                   : isScrolled
                     ? "text-muted-foreground"
-                    : "text-black/90 hover:text-black",
+                    : isDarkHeaderPage
+                      ? "text-white/90 hover:text-white"
+                      : "text-black/90 hover:text-black",
               )}
             >
               {link.label}
@@ -107,17 +115,22 @@ const Navbar = () => {
               "font-bold uppercase tracking-wide hover:bg-transparent hover:text-primary",
               isScrolled
                 ? "text-foreground"
-                : "text-black hover:text-black md:hover:bg-white/10",
+                : isDarkHeaderPage
+                  ? "text-white hover:text-white md:hover:bg-white/10"
+                  : "text-black hover:text-black md:hover:bg-white/10",
             )}
           >
             <Link href="/login">Masuk</Link>
           </Button>
           <Button
             asChild
-            className="rounded-none skew-x-[-10deg] px-6 font-bold shadow-md hover:shadow-lg transition-all bg-primary text-primary-foreground hover:bg-primary/90"
+            className={cn(
+              "rounded-none skew-x-[-10deg] px-6 font-bold shadow-md hover:shadow-lg transition-all bg-primary text-primary-foreground hover:bg-primary/90",
+              isDarkHeaderPage ? "text-black bg-white" : "text-white",
+            )}
           >
             <Link href="/register">
-              <span className="skew-x-10">Daftar</span>
+              <span className="skew-x-10">DAFTAR</span>
             </Link>
           </Button>
         </div>
@@ -130,7 +143,15 @@ const Navbar = () => {
           {isMobileMenuOpen ? (
             <X className="w-6 h-6" />
           ) : (
-            <Menu className={cn("w-6 h-6", !isScrolled && "md:text-black")} />
+            <Menu
+              className={cn(
+                "w-6 h-6",
+                !isScrolled &&
+                  (isDarkHeaderPage
+                    ? "text-white md:text-white"
+                    : "md:text-black"),
+              )}
+            />
           )}
         </button>
       </div>
@@ -159,7 +180,7 @@ const Navbar = () => {
             </Button>
             <Button
               asChild
-              className="w-full bg-primary text-primary-foreground"
+              className={cn("w-full bg-primary text-primary-foreground")}
             >
               <Link href="/register">Daftar</Link>
             </Button>

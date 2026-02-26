@@ -111,7 +111,7 @@ const DonasiDetailPage = () => {
     if (isDonateOpen && mutation.isSuccess) {
       mutation.reset();
     }
-  }, [isDonateOpen]);
+  }, [isDonateOpen, mutation]);
 
   // Quick preset handler
   const handlePresetClick = (amount) => {
