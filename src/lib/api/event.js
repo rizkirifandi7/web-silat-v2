@@ -24,3 +24,18 @@ export const updateEvent = async (id, data) => {
 export const deleteEvent = async (id) => {
   return api.delete(`/events/${id}`);
 };
+
+// Create event payment (returns Midtrans token)
+export const createEventPayment = async (data) => {
+  return api.post("/payments", data);
+};
+
+// Register to event (free events)
+export const registerToEvent = async (data) => {
+  return api.post("/registrations", data);
+};
+
+// Check registration status
+export const checkRegistration = async (eventId, userId) => {
+  return api.get(`/registrations/check/${eventId}/${userId}`);
+};

@@ -155,7 +155,7 @@ export default function CetakKartuPage() {
                 Pratinjau Kartu (Dua Sisi)
               </Badge>
 
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4 w-full transition-transform">
+              <div className="flex flex-col md:flex-row items-center justify-center w-full transition-transform">
                 <div className="flex flex-col items-center gap-3">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                     Sisi Depan

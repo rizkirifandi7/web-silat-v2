@@ -12,14 +12,16 @@ import {
   Share2,
   CheckCircle2,
   User,
-  Mail,
-  Phone,
   Loader2,
 } from "lucide-react";
+import Script from "next/script";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getEventById } from "@/lib/api/event";
+import {
+  getEventById,
+  createEventPayment,
+  registerToEvent,
+} from "@/lib/api/event";
 import useAuthStore from "@/store/useAuthStore";
-import api from "@/lib/axios";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -30,11 +32,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-// Mock data removed, fetching from API
 
 const EventDetailPage = () => {
   const params = useParams();
@@ -49,37 +48,81 @@ const EventDetailPage = () => {
 
   const event = eventResponse?.data || null;
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
-  const mutation = useMutation({
-    mutationFn: (data) => api.post("/registrations", data),
-    onSuccess: (res) => {
-      // Jika event berbayar dan butuh pembayaran, jangan langsung sukses, tampilkan UI pembayaran
-      if (res?.requiresPayment) {
-        toast.info("Ini adalah event berbayar. Silakan lakukan pembayaran.");
-        setIsRegisterOpen(true);
-      } else if (res?.success) {
-        toast.success("Pendaftaran berhasil!");
-        setIsRegisterOpen(true);
-      } else {
-        toast.error(res?.message || "Gagal mendaftar event.");
-      }
+  // Mutation for free event registration
+  const registerMutation = useMutation({
+    mutationFn: registerToEvent,
+    onSuccess: () => {
+      toast.success("Pendaftaran berhasil!");
+      setRegistrationSuccess(true);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Gagal mendaftar event.");
     },
   });
 
-  const handleRegister = (e) => {
-    e.preventDefault();
+  // Mutation for paid event payment
+  const paymentMutation = useMutation({
+    mutationFn: createEventPayment,
+    onSuccess: (response) => {
+      const { midtransToken } = response.data;
+      if (window.snap) {
+        setIsRegisterOpen(false);
+        window.snap.pay(midtransToken, {
+          onSuccess: () => {
+            toast.success("Pembayaran berhasil! Anda terdaftar di event ini.");
+            setRegistrationSuccess(true);
+            setIsRegisterOpen(true);
+          },
+          onPending: () => {
+            toast.info(
+              "Pembayaran tertunda. Silakan selesaikan pembayaran Anda.",
+            );
+          },
+          onError: () => {
+            toast.error("Pembayaran gagal. Silakan coba lagi.");
+          },
+          onClose: () => {
+            toast.warning("Anda menutup jendela pembayaran sebelum selesai.");
+          },
+        });
+      } else {
+        toast.error(
+          "Sistem pembayaran sedang tidak tersedia. Mohon refresh halaman.",
+        );
+      }
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message ||
+          "Gagal membuat pembayaran. Silakan coba lagi.",
+      );
+    },
+  });
+
+  const handleRegister = () => {
     if (!user) {
       toast.error("Silakan login terlebih dahulu untuk mendaftar.");
       return;
     }
-    mutation.mutate({
-      eventId: id,
-      userId: user.id,
-    });
+
+    if (event.isFree || event.price === 0) {
+      // Free event — direct registration
+      registerMutation.mutate({
+        eventId: parseInt(id),
+        userId: user.id,
+      });
+    } else {
+      // Paid event — create payment first, webhook will auto-register
+      paymentMutation.mutate({
+        eventId: parseInt(id),
+        userId: user.id,
+      });
+    }
   };
+
+  const isPending = registerMutation.isPending || paymentMutation.isPending;
 
   if (isLoading) {
     return (
@@ -111,6 +154,18 @@ const EventDetailPage = () => {
 
   return (
     <main className="min-h-screen bg-background">
+      {/* Midtrans Snap Script — only load for paid events */}
+      {!event.isFree && event.price > 0 && (
+        <Script
+          src={
+            process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true"
+              ? "https://app.midtrans.com/snap/snap.js"
+              : "https://app.sandbox.midtrans.com/snap/snap.js"
+          }
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+        />
+      )}
+
       {/* 1. Header Section */}
       <section className="relative py-20 overflow-hidden bg-zinc-900">
         <div className="absolute inset-0 z-0">
@@ -136,7 +191,7 @@ const EventDetailPage = () => {
           <div className="flex flex-col md:flex-row gap-8 items-end">
             <div className="flex-1">
               <Badge className="mb-4 bg-primary text-primary-foreground hover:bg-primary/90 text-sm px-3 py-1 rounded-none skew-x-[-10deg]">
-                <span className="skew-x-10">{event.category}</span>
+                <span className="skew-x-10">{event.eventType}</span>
               </Badge>
               <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white uppercase italic mb-4 drop-shadow-xl leading-none">
                 {event.title}
@@ -261,14 +316,25 @@ const EventDetailPage = () => {
                     Harga Tiket
                   </p>
                   <div className="text-4xl font-black text-primary italic tracking-tighter">
-                    {event.price === 0
+                    {event.isFree || event.price === 0
                       ? "GRATIS"
                       : new Intl.NumberFormat("id-ID", {
                           style: "currency",
                           currency: "IDR",
+                          minimumFractionDigits: 0,
                         }).format(event.price)}
                   </div>
                 </div>
+
+                {/* Capacity info */}
+                {event.capacity > 0 && (
+                  <div className="mb-6 text-center">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                      Kuota: {event.registeredCount || 0} / {event.capacity}{" "}
+                      peserta
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-4 mb-8">
                   <Button
@@ -276,15 +342,17 @@ const EventDetailPage = () => {
                     className="w-full h-12 text-base font-black uppercase tracking-widest skew-x-[-10deg] shadow-lg shadow-primary/20 rounded-none"
                     onClick={() => setIsRegisterOpen(true)}
                     disabled={
-                      event.status !== "published" || mutation.isSuccess
+                      event.status !== "published" || registrationSuccess
                     }
                   >
                     <span className="skew-x-10">
                       {event.status !== "published"
                         ? "Pendaftaran Ditutup"
-                        : mutation.isSuccess
+                        : registrationSuccess
                           ? "Sudah Terdaftar"
-                          : "Daftar Sekarang"}
+                          : event.isFree || event.price === 0
+                            ? "Daftar Sekarang"
+                            : "Daftar & Bayar"}
                     </span>
                   </Button>
                   <Button
@@ -344,101 +412,96 @@ const EventDetailPage = () => {
       {/* Registration Dialog */}
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-none border-2 border-zinc-200">
-          {/* Jika pendaftaran sukses dan tidak butuh pembayaran, atau dialog konfirmasi awal */}
-          {!mutation.isSuccess ||
-          (mutation.data && mutation.data.requiresPayment) ? (
+          {!registrationSuccess ? (
             <>
-              {/* Jika sudah submit dan butuh pembayaran, tampilkan UI pembayaran */}
-              {mutation.data && mutation.data.requiresPayment ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
-                  <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-4 border-2 border-yellow-600">
-                    <Loader2 className="w-8 h-8 animate-pulse" />
-                  </div>
-                  <DialogTitle className="text-2xl font-black uppercase italic">
-                    Pembayaran Diperlukan
-                  </DialogTitle>
-                  <DialogDescription className="text-center max-w-xs mx-auto">
-                    {mutation.data.message ||
-                      "Ini adalah event berbayar. Silakan lakukan pembayaran untuk melanjutkan."}
-                  </DialogDescription>
-                  {/* Tombol bayar, bisa diarahkan ke payment gateway atau popup pembayaran */}
-                  <Button
-                    className="mt-4 rounded-none font-bold uppercase"
-                    onClick={() => {
-                      // TODO: Integrasi dengan payment gateway, misal redirect ke halaman pembayaran
-                      window.location.href = `/payment?eventId=${id}`;
-                    }}
-                  >
-                    Bayar Sekarang
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="mt-2 rounded-none font-bold uppercase"
-                    onClick={() => setIsRegisterOpen(false)}
-                  >
-                    Batal
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-black uppercase italic tracking-tight">
-                      Konfirmasi Pendaftaran
-                    </DialogTitle>
-                    <DialogDescription>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black uppercase italic tracking-tight">
+                  Konfirmasi Pendaftaran
+                </DialogTitle>
+                <DialogDescription>
+                  {event.isFree || event.price === 0 ? (
+                    <>
                       Klik tombol di bawah untuk mendaftar pada event{" "}
                       <strong>{event.title}</strong>.
-                    </DialogDescription>
-                  </DialogHeader>
+                    </>
+                  ) : (
+                    <>
+                      Anda akan diarahkan ke halaman pembayaran untuk event{" "}
+                      <strong>{event.title}</strong> senilai{" "}
+                      <strong>
+                        {new Intl.NumberFormat("id-ID", {
+                          style: "currency",
+                          currency: "IDR",
+                          minimumFractionDigits: 0,
+                        }).format(event.price)}
+                      </strong>
+                      .
+                    </>
+                  )}
+                </DialogDescription>
+              </DialogHeader>
 
-                  <div className="py-6 space-y-4">
-                    {!user ? (
-                      <div className="bg-amber-50 border-2 border-amber-200 p-4 text-amber-800 text-sm font-medium">
-                        Anda perlu login terlebih dahulu untuk mendaftar event
-                        ini.
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm py-2 border-b">
-                          <span className="text-muted-foreground uppercase font-bold text-xs tracking-widest">
-                            Nama
-                          </span>
-                          <span className="font-bold">{user.nama}</span>
-                        </div>
-                        <div className="flex justify-between text-sm py-2 border-b">
-                          <span className="text-muted-foreground uppercase font-bold text-xs tracking-widest">
-                            Email
-                          </span>
-                          <span className="font-bold">{user.email}</span>
-                        </div>
+              <div className="py-6 space-y-4">
+                {!user ? (
+                  <div className="bg-amber-50 border-2 border-amber-200 p-4 text-amber-800 text-sm font-medium">
+                    Anda perlu login terlebih dahulu untuk mendaftar event ini.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm py-2 border-b">
+                      <span className="text-muted-foreground uppercase font-bold text-xs tracking-widest">
+                        Nama
+                      </span>
+                      <span className="font-bold">{user.nama}</span>
+                    </div>
+                    <div className="flex justify-between text-sm py-2 border-b">
+                      <span className="text-muted-foreground uppercase font-bold text-xs tracking-widest">
+                        Email
+                      </span>
+                      <span className="font-bold">{user.email}</span>
+                    </div>
+                    {!event.isFree && event.price > 0 && (
+                      <div className="flex justify-between text-sm py-2 border-b">
+                        <span className="text-muted-foreground uppercase font-bold text-xs tracking-widest">
+                          Total Bayar
+                        </span>
+                        <span className="font-bold text-primary">
+                          {new Intl.NumberFormat("id-ID", {
+                            style: "currency",
+                            currency: "IDR",
+                            minimumFractionDigits: 0,
+                          }).format(event.price)}
+                        </span>
                       </div>
                     )}
                   </div>
+                )}
+              </div>
 
-                  <DialogFooter>
-                    {!user ? (
-                      <Button
-                        asChild
-                        className="w-full rounded-none font-bold uppercase tracking-widest h-11"
-                      >
-                        <Link href="/login">Ke Halaman Login</Link>
-                      </Button>
+              <DialogFooter>
+                {!user ? (
+                  <Button
+                    asChild
+                    className="w-full rounded-none font-bold uppercase tracking-widest h-11"
+                  >
+                    <Link href="/login">Ke Halaman Login</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleRegister}
+                    disabled={isPending}
+                    className="w-full rounded-none font-bold uppercase tracking-widest h-11"
+                  >
+                    {isPending ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : event.isFree || event.price === 0 ? (
+                      "Konfirmasi Pendaftaran"
                     ) : (
-                      <Button
-                        onClick={handleRegister}
-                        disabled={mutation.isPending}
-                        className="w-full rounded-none font-bold uppercase tracking-widest h-11"
-                      >
-                        {mutation.isPending ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          "Konfirmasi Pendaftaran"
-                        )}
-                      </Button>
+                      "Bayar & Daftar Sekarang"
                     )}
-                  </DialogFooter>
-                </>
-              )}
+                  </Button>
+                )}
+              </DialogFooter>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
@@ -450,9 +513,9 @@ const EventDetailPage = () => {
               </DialogTitle>
               <DialogDescription className="text-center max-w-xs mx-auto">
                 Terima kasih telah mendaftar.{" "}
-                {event.isFree
+                {event.isFree || event.price === 0
                   ? "Pendaftaran Anda telah kami terima."
-                  : "Silakan selesaikan pembayaran Anda untuk mengonfirmasi kehadiran."}
+                  : "Pembayaran berhasil dan Anda telah terdaftar di event ini."}
               </DialogDescription>
               <Button
                 onClick={() => {

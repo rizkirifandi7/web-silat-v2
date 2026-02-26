@@ -16,8 +16,6 @@ import Image from "next/image";
 export const MemberCardFront = ({ member, id = "member-card-front" }) => {
   if (!member) return null;
 
-  console.log(member.id);
-
   return (
     <div
       id={id}
@@ -200,5 +198,4 @@ export const MemberCardBack = ({ member, id = "member-card-back" }) => {
   );
 };
 
-// Default export
 export const MemberCard = MemberCardFront;

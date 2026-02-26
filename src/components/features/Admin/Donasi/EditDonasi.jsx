@@ -99,7 +99,7 @@ const formSchema = z.object({
 
 // Konstanta style input
 const inputStyles =
-  "bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
+  "w-full bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
 
 export function EditDonasi({ open, setOpen, campaign }) {
   const queryClient = useQueryClient();
@@ -127,7 +127,7 @@ export function EditDonasi({ open, setOpen, campaign }) {
         category: campaign.category,
         targetAmount: campaign.targetAmount?.toString() || "",
         isUrgent: campaign.isUrgent || false,
-        status: campaign.status || "draft",
+        status: campaign.status || "active",
         endDate: campaign.endDate ? new Date(campaign.endDate) : undefined,
         image: null,
       });
@@ -416,8 +416,8 @@ export function EditDonasi({ open, setOpen, campaign }) {
                       name="endDate"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold mb-1">
-                            Batas Waktu (Opsional)
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Batas Waktu
                           </FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>

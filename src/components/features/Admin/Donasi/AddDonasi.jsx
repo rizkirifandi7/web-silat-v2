@@ -98,7 +98,7 @@ const formSchema = z.object({
 
 // Konstanta kelas untuk input konsisten
 const inputStyles =
-  "bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
+  "w-full bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
 
 export function AddDonasi() {
   const [open, setOpen] = useState(false);
@@ -113,6 +113,7 @@ export function AddDonasi() {
       description: "",
       category: "umum",
       targetAmount: "",
+      status: "",
       isUrgent: false,
       image: null,
     },
@@ -139,6 +140,7 @@ export function AddDonasi() {
     formData.append("category", values.category);
     formData.append("targetAmount", values.targetAmount);
     formData.append("isUrgent", values.isUrgent);
+    formData.append("status", values.status);
 
     if (values.endDate) {
       formData.append("endDate", values.endDate.toISOString());
@@ -394,51 +396,86 @@ export function AddDonasi() {
                   </div>
 
                   {/* BATAS WAKTU */}
-                  <FormField
-                    control={form.control}
-                    name="endDate"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold mb-1">
-                          Batas Waktu (Opsional)
-                        </FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  inputStyles,
-                                  "pl-3 text-left font-normal",
-                                  !field.value && "text-neutral-400",
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP")
-                                ) : (
-                                  <span>Pilih batas akhir donasi</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            className="w-auto p-0 bg-white border-neutral-200 rounded-xl shadow-md"
-                            align="start"
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* BATAS WAKTU */}
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Batas Waktu
+                          </FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    inputStyles,
+                                    "pl-3 text-left font-normal",
+                                    !field.value && "text-neutral-400",
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pilih batas akhir</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0 bg-white border-neutral-200 rounded-xl shadow-md"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* STATUS PROGRAM */}
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Status Program
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
                           >
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage className="text-red-500 text-xs" />
-                      </FormItem>
-                    )}
-                  />
+                            <FormControl>
+                              <SelectTrigger className={inputStyles}>
+                                <SelectValue placeholder="Pilih status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white border-neutral-200 text-neutral-900 rounded-xl shadow-md">
+                              <SelectItem value="draft">Draft</SelectItem>
+                              <SelectItem value="active">Aktif</SelectItem>
+                              <SelectItem value="completed">Selesai</SelectItem>
+                              <SelectItem value="cancelled">
+                                Dibatalkan
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
                   {/* SWITCH MENDESAK */}
                   <FormField

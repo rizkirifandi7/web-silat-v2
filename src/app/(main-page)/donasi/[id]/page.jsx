@@ -379,7 +379,7 @@ const DonasiDetailPage = () => {
                     size="lg"
                     className="w-full h-14 text-lg font-black uppercase tracking-widest skew-x-[-10deg] shadow-lg shadow-primary/20 rounded-none transform hover:-translate-y-1 transition-all"
                     onClick={() => setIsDonateOpen(true)}
-                    disabled={!donationAmount || Number(donationAmount) < 10000}
+                    disabled={!donationAmount || Number(donationAmount) < 1000}
                   >
                     <span className="skew-x-10 flex items-center gap-2">
                       <Heart className="w-5 h-5 fill-current" />
