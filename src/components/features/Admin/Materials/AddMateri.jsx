@@ -105,7 +105,27 @@ export function AddMateri() {
       closeDialog();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || "Gagal menambahkan materi");
+      // Log lengkap ke console untuk debugging
+      console.error("=== UPLOAD MATERIAL ERROR ===");
+      console.error("Status:", error.response?.status);
+      console.error("Status Text:", error.response?.statusText);
+      console.error(
+        "Response Data:",
+        JSON.stringify(error.response?.data, null, 2),
+      );
+      console.error("Error Message:", error.message);
+      console.error("Full Error:", error);
+
+      // Tampilkan pesan error yang lebih detail di toast
+      const serverMessage = error.response?.data?.message || "";
+      const serverError = error.response?.data?.error || "";
+      const statusCode = error.response?.status || "";
+
+      const detailMsg = serverError
+        ? `[${statusCode}] ${serverMessage} — ${serverError}`
+        : `[${statusCode}] ${serverMessage || error.message || "Gagal menambahkan materi"}`;
+
+      toast.error(detailMsg, { duration: 10000 });
     },
   });
 

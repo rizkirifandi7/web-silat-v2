@@ -141,7 +141,7 @@ const PageVerifyId = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-screen bg-linear-to-b from-background to-muted/20">
       <div className="container max-w-2xl mx-auto px-4 py-12 md:py-20">
         {/* Header */}
         <div className="text-center mb-10 space-y-3">

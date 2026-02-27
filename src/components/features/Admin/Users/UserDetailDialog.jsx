@@ -27,16 +27,19 @@ import {
   Activity,
   Eye,
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 // Komponen InfoItem minimalis untuk menampilkan Data
-const InfoItem = ({ label, value, colSpan = 1 }) => (
+const InfoItem = ({ label, value, colSpan = 1, isCapitalize = false }) => (
   <div
     className={`flex flex-col gap-1.5 ${colSpan === 2 ? "sm:col-span-2" : ""}`}
   >
     <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
       {label}
     </span>
-    <span className="text-sm font-medium text-neutral-900 leading-relaxed">
+    <span
+      className={`text-sm font-medium text-neutral-900 leading-relaxed ${isCapitalize ? "capitalize" : ""}`}
+    >
       {value || "—"}
     </span>
   </div>
@@ -59,9 +62,24 @@ const Section = ({ icon: Icon, title, children }) => (
   </div>
 );
 
+// Helper format tanggal
+const formatDate = (dateString) => {
+  if (!dateString) return "—";
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(date);
+  } catch {
+    return dateString;
+  }
+};
+
 export default function UserDetailDialog({ user }) {
   const [open, setOpen] = useState(false);
-  const userId = user?.id;
+  const userId = typeof user === "object" ? user?.id : user;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["user-detail", userId],
@@ -70,21 +88,6 @@ export default function UserDetailDialog({ user }) {
   });
 
   if (!userId) return null;
-
-  // Helper format tanggal
-  const formatDate = (dateString) => {
-    if (!dateString) return "—";
-    try {
-      const date = new Date(dateString);
-      return new Intl.DateTimeFormat("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(date);
-    } catch {
-      return dateString;
-    }
-  };
 
   const isAnggota = data?.role === "anggota";
 
@@ -106,7 +109,16 @@ export default function UserDetailDialog({ user }) {
           <div className="flex items-center gap-4">
             {/* Avatar Placeholder */}
             <div className="w-14 h-14 rounded-full bg-neutral-50 flex items-center justify-center ring-1 ring-neutral-200 shadow-sm">
-              <User className="w-6 h-6 text-neutral-500" />
+              <Avatar className="w-14 h-14 rounded-full bg-neutral-50 flex items-center justify-center ring-1 ring-neutral-200 shadow-sm overflow-hidden">
+                <AvatarImage
+                  src={data?.foto_url}
+                  alt={data?.nama}
+                  className="object-cover w-full h-full"
+                />
+                <AvatarFallback>
+                  <User className="w-6 h-6 text-neutral-400" />
+                </AvatarFallback>
+              </Avatar>
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -126,15 +138,17 @@ export default function UserDetailDialog({ user }) {
                   {/* Status Indicator Indicator */}
                   <div className="flex items-center gap-1.5 bg-neutral-50 px-2.5 py-0.5 rounded-md ring-1 ring-neutral-200">
                     <span className="relative flex h-2 w-2">
-                      {data.status_aktif && (
+                      {data?.anggotaSilat?.status_aktif && (
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                       )}
                       <span
-                        className={`relative inline-flex rounded-full h-2 w-2 ${data.status_aktif ? "bg-green-500" : "bg-red-500"}`}
+                        className={`relative inline-flex rounded-full h-2 w-2 ${data?.anggotaSilat?.status_aktif === true ? "bg-green-500" : "bg-red-500"}`}
                       ></span>
                     </span>
                     <span className="text-[11px] font-semibold text-neutral-600 uppercase tracking-wider">
-                      {data.status_aktif ? "Aktif" : "Tidak Aktif"}
+                      {data?.anggotaSilat?.status_aktif === true
+                        ? "Aktif"
+                        : "Tidak Aktif"}
                     </span>
                   </div>
                 </div>
@@ -198,22 +212,26 @@ export default function UserDetailDialog({ user }) {
               {/* SECTION 2: Data Pribadi */}
               <Section icon={User} title="Data Pribadi">
                 <InfoItem
-                  label="NIK"
+                  label="Jenis Kelamin"
                   value={
-                    <span className="flex items-center gap-2">
-                      <Hash className="w-3.5 h-3.5 text-neutral-400" />
-                      {data.nik}
-                    </span>
+                    data?.anggotaSilat?.jenis_kelamin || data?.jenis_kelamin
                   }
+                  isCapitalize
                 />
-                <InfoItem label="Jenis Kelamin" value={data.jenis_kelamin} />
-                <InfoItem label="Tempat Lahir" value={data.tempat_lahir} />
+                <InfoItem
+                  label="Tempat Lahir"
+                  value={data?.anggotaSilat?.tempat_lahir || data?.tempat_lahir}
+                  isCapitalize
+                />
                 <InfoItem
                   label="Tanggal Lahir"
                   value={
                     <span className="flex items-center gap-2">
                       <Calendar className="w-3.5 h-3.5 text-neutral-400" />
-                      {formatDate(data.tanggal_lahir)}
+                      {formatDate(
+                        data?.anggotaSilat?.tanggal_lahir ||
+                          data?.tanggal_lahir,
+                      )}
                     </span>
                   }
                 />
@@ -236,14 +254,20 @@ export default function UserDetailDialog({ user }) {
                   />
                   <InfoItem
                     label="Status Perguruan"
-                    value={data.status_perguruan}
+                    value={
+                      data?.anggotaSilat?.status_perguruan ||
+                      data?.status_perguruan
+                    }
                   />
                   <InfoItem
                     label="Tanggal Bergabung"
                     value={
                       <span className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-neutral-400" />
-                        {formatDate(data.tanggal_bergabung)}
+                        {formatDate(
+                          data?.anggotaSilat?.tanggal_bergabung ||
+                            data?.tanggal_bergabung,
+                        )}
                       </span>
                     }
                   />

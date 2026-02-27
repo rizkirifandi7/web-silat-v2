@@ -36,13 +36,23 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createUser } from "@/lib/api/users";
 import { toast } from "sonner";
 import { useState } from "react";
+import Image from "next/image";
 
-import { Loader2, Plus, UserPlus, Shield, User, Medal } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  UserPlus,
+  Shield,
+  User,
+  Medal,
+  UploadCloud,
+  X,
+} from "lucide-react";
 import { URUTAN_SABUK } from "@/constant/data";
 
 const formSchema = z.object({
   nama: z.string().min(1, "Nama wajib diisi"),
-  email: z.string().optional(),
+  email: z.string().email("Email tidak valid"),
   password: z.string().min(6, "Password minimal 6 karakter"),
   role: z.enum(["admin", "user", "anggota"], {
     required_error: "Role wajib dipilih",
@@ -56,6 +66,7 @@ const formSchema = z.object({
   status_aktif: z.boolean().default(true),
   tanggal_bergabung: z.string().optional(),
   status_perguruan: z.string().optional(),
+  foto: z.any().optional(), // File upload
 });
 
 // Wrapper Section untuk struktur form yang rapi (Light Mode)
@@ -79,6 +90,7 @@ const inputStyles =
 
 export function AddUser() {
   const [open, setOpen] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const queryClient = useQueryClient();
 
   const form = useForm({
@@ -97,6 +109,7 @@ export function AddUser() {
       status_aktif: true,
       tanggal_bergabung: "",
       status_perguruan: "",
+      foto: undefined,
     },
   });
 
@@ -112,6 +125,7 @@ export function AddUser() {
         description: "User baru telah berhasil dibuat.",
       });
       setOpen(false);
+      setPhotoPreview(null);
       form.reset();
     },
     onError: (error) => {
@@ -131,8 +145,10 @@ export function AddUser() {
       alamat: values.alamat || null,
     };
 
+    let anggotaPayload = null;
+
     if (values.role === "anggota") {
-      const anggotaPayload = {
+      anggotaPayload = {
         tempat_lahir: values.tempat_lahir,
         tanggal_lahir: values.tanggal_lahir,
         jenis_kelamin: values.jenis_kelamin,
@@ -141,9 +157,31 @@ export function AddUser() {
         tanggal_bergabung: values.tanggal_bergabung,
         status_perguruan: values.status_perguruan,
       };
-      mutation.mutate({ user: userPayload, anggota: anggotaPayload });
+    }
+
+    if (values.foto && values.foto instanceof File) {
+      const formData = new FormData();
+      // Append user payload directly instead of stringifying
+      Object.entries(userPayload).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formData.append(`user[${key}]`, value);
+        }
+      });
+      if (anggotaPayload) {
+        Object.entries(anggotaPayload).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formData.append(`anggota[${key}]`, value);
+          }
+        });
+      }
+      formData.append("foto", values.foto);
+      mutation.mutate(formData);
     } else {
-      mutation.mutate(userPayload);
+      if (anggotaPayload) {
+        mutation.mutate({ user: userPayload, anggota: anggotaPayload });
+      } else {
+        mutation.mutate(userPayload);
+      }
     }
   };
 
@@ -210,7 +248,7 @@ export function AddUser() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
-                            Email (Opsional)
+                            Email
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -308,6 +346,88 @@ export function AddUser() {
                               {...field}
                               className={`${inputStyles} resize-none`}
                             />
+                          </FormControl>
+                          <FormMessage className="text-red-500 text-xs" />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="foto"
+                      render={({
+                        field: { value, onChange, ...fieldProps },
+                      }) => (
+                        <FormItem className="sm:col-span-2">
+                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                            Foto Profil (Opsional)
+                          </FormLabel>
+                          <FormControl>
+                            <div className="space-y-4">
+                              {/* Preview Area */}
+                              <div className="flex items-center gap-4">
+                                <div className="relative h-24 w-24 shrink-0 rounded-full border-2 border-dashed border-neutral-300 bg-neutral-50 overflow-hidden flex items-center justify-center">
+                                  {photoPreview ? (
+                                    <Image
+                                      src={photoPreview}
+                                      alt="Preview Foto"
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  ) : (
+                                    <User className="h-8 w-8 text-neutral-400" />
+                                  )}
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      className="cursor-pointer file:text-sm file:font-medium file:text-neutral-700 file:bg-neutral-100 file:border-0 file:py-1 file:px-3 file:rounded-md hover:file:bg-neutral-200 transition-colors w-full bg-white shadow-sm border-neutral-200 outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                                      onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                          onChange(file);
+                                          const reader = new FileReader();
+                                          reader.onloadend = () => {
+                                            setPhotoPreview(reader.result);
+                                          };
+                                          reader.readAsDataURL(file);
+                                        } else {
+                                          onChange(undefined);
+                                          setPhotoPreview(null);
+                                        }
+                                      }}
+                                      {...fieldProps}
+                                    />
+                                    {photoPreview && (
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="shrink-0 h-10 w-10 text-red-500 hover:text-red-600 hover:bg-red-50 border-neutral-200"
+                                        onClick={() => {
+                                          onChange(undefined);
+                                          setPhotoPreview(null);
+                                          // Reset file input by finding it
+                                          const fileInput =
+                                            document.querySelector(
+                                              'input[type="file"][name="foto"]',
+                                            );
+                                          if (fileInput) fileInput.value = "";
+                                        }}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-neutral-500">
+                                    Format: JPG, PNG, WEBP. Maks 5MB. Proporsi
+                                    direkomendasikan 1:1.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
                           </FormControl>
                           <FormMessage className="text-red-500 text-xs" />
                         </FormItem>
@@ -456,7 +576,7 @@ export function AddUser() {
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="e.g. Aktif Latihan"
+                                  placeholder="e.g. Pelatih, Pembina"
                                   {...field}
                                   className={inputStyles}
                                 />

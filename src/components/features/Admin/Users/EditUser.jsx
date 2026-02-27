@@ -38,7 +38,8 @@ import { updateUser } from "@/lib/api/users";
 import { getUserById } from "@/lib/api/users";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { Loader2, Pencil, Shield, User, Medal } from "lucide-react";
+import Image from "next/image";
+import { Loader2, Pencil, Shield, User, Medal, X } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { URUTAN_SABUK } from "@/constant/data";
 
@@ -59,6 +60,7 @@ const formSchema = z.object({
   status_aktif: z.boolean().default(true),
   tanggal_bergabung: z.string().optional(),
   status_perguruan: z.string().optional(),
+  foto: z.any().optional(), // File upload
 });
 
 // Wrapper Section untuk struktur form yang rapi (Light Mode)
@@ -82,6 +84,7 @@ const inputStyles =
 
 export function EditUser({ user }) {
   const [open, setOpen] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(user?.foto_url || null);
   const queryClient = useQueryClient();
 
   const userId = user?.id;
@@ -107,6 +110,7 @@ export function EditUser({ user }) {
       status_aktif: true,
       tanggal_bergabung: "",
       status_perguruan: "",
+      foto: undefined,
     },
   });
 
@@ -130,13 +134,17 @@ export function EditUser({ user }) {
           userDetail?.anggotaSilat?.tanggal_lahir ||
           "",
         jenis_kelamin:
-          userDetail.jenis_kelamin ||
-          userDetail?.anggotaSilat?.jenis_kelamin ||
-          "Laki-laki",
+          userDetail?.anggotaSilat?.jenis_kelamin?.toLowerCase() ===
+            "perempuan" ||
+          userDetail?.jenis_kelamin?.toLowerCase() === "perempuan"
+            ? "Perempuan"
+            : "Laki-laki",
         tingkatan_sabuk:
-          userDetail.sabuk ||
-          userDetail?.anggotaSilat?.tingkatan_sabuk ||
-          URUTAN_SABUK[0],
+          URUTAN_SABUK.find(
+            (s) =>
+              s ===
+              (userDetail?.anggotaSilat?.tingkatan_sabuk || userDetail?.sabuk),
+          ) || URUTAN_SABUK[0],
         no_hp: userDetail.no_hp || "",
         alamat: userDetail.alamat || "",
         status_aktif:
@@ -145,9 +153,18 @@ export function EditUser({ user }) {
             : true,
         tanggal_bergabung: userDetail?.anggotaSilat?.tanggal_bergabung || "",
         status_perguruan: userDetail?.anggotaSilat?.status_perguruan || "",
+        foto: undefined,
       });
     }
   }, [userDetail, form]);
+
+  // Sync photo preview safely
+  useEffect(() => {
+    if (userDetail?.foto_url) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPhotoPreview(userDetail.foto_url);
+    }
+  }, [userDetail?.foto_url]);
 
   const mutation = useMutation({
     mutationFn: (values) => {
@@ -159,13 +176,14 @@ export function EditUser({ user }) {
         alamat: values.alamat || null,
       };
 
-      // Kirim password hanya jika diisi
       if (values.password) {
         userPayload.password = values.password;
       }
 
+      let anggotaPayload = null;
+
       if (values.role === "anggota") {
-        const anggotaPayload = {
+        anggotaPayload = {
           tempat_lahir: values.tempat_lahir,
           tanggal_lahir: values.tanggal_lahir,
           jenis_kelamin: values.jenis_kelamin,
@@ -174,12 +192,34 @@ export function EditUser({ user }) {
           tanggal_bergabung: values.tanggal_bergabung,
           status_perguruan: values.status_perguruan,
         };
-        return updateUser(userId, {
-          user: userPayload,
-          anggota: anggotaPayload,
+      }
+
+      if (values.foto && values.foto instanceof File) {
+        const formData = new FormData();
+        // Append user payload directly instead of stringifying
+        Object.entries(userPayload).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formData.append(`user[${key}]`, value);
+          }
         });
+        if (anggotaPayload) {
+          Object.entries(anggotaPayload).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+              formData.append(`anggota[${key}]`, value);
+            }
+          });
+        }
+        formData.append("foto", values.foto);
+        return updateUser(userId, formData);
       } else {
-        return updateUser(userId, userPayload);
+        if (anggotaPayload) {
+          return updateUser(userId, {
+            user: userPayload,
+            anggota: anggotaPayload,
+          });
+        } else {
+          return updateUser(userId, userPayload);
+        }
       }
     },
     onSuccess: () => {
@@ -188,6 +228,7 @@ export function EditUser({ user }) {
         description: "Data user telah berhasil diperbarui.",
       });
       setOpen(false);
+      // Update form initial preview explicitly if needed
     },
     onError: (error) => {
       toast.error("Gagal memperbarui user", {
@@ -374,6 +415,94 @@ export function EditUser({ user }) {
                                 {...field}
                                 className={`${inputStyles} resize-none`}
                               />
+                            </FormControl>
+                            <FormMessage className="text-red-500 text-xs" />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="foto"
+                        render={({
+                          field: { value, onChange, ...fieldProps },
+                        }) => (
+                          <FormItem className="sm:col-span-2">
+                            <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                              Foto Profil Baru (Opsional)
+                            </FormLabel>
+                            <FormControl>
+                              <div className="space-y-4">
+                                {/* Preview Area */}
+                                <div className="flex items-center gap-4">
+                                  <div className="relative h-24 w-24 shrink-0 rounded-full border-2 border-dashed border-neutral-300 bg-neutral-50 overflow-hidden flex items-center justify-center">
+                                    {photoPreview ? (
+                                      <Image
+                                        src={photoPreview}
+                                        alt="Preview Foto"
+                                        fill
+                                        className="object-cover"
+                                      />
+                                    ) : (
+                                      <User className="h-8 w-8 text-neutral-400" />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        type="file"
+                                        accept="image/*"
+                                        className="cursor-pointer file:text-sm file:font-medium file:text-neutral-700 file:bg-neutral-100 file:border-0 file:py-1 file:px-3 file:rounded-md hover:file:bg-neutral-200 transition-colors w-full bg-white shadow-sm border-neutral-200 outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                                        onChange={(e) => {
+                                          const file = e.target.files[0];
+                                          if (file) {
+                                            onChange(file);
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                              setPhotoPreview(reader.result);
+                                            };
+                                            reader.readAsDataURL(file);
+                                          } else {
+                                            onChange(undefined);
+                                            // Kembalikan ke foto lama atau hapus
+                                            setPhotoPreview(
+                                              userDetail?.foto_url || null,
+                                            );
+                                          }
+                                        }}
+                                        {...fieldProps}
+                                      />
+                                      {value && (
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="icon"
+                                          className="shrink-0 h-10 w-10 text-red-500 hover:text-red-600 hover:bg-red-50 border-neutral-200"
+                                          onClick={() => {
+                                            onChange(undefined);
+                                            setPhotoPreview(
+                                              userDetail?.foto_url || null,
+                                            );
+                                            // Reset file input by finding it
+                                            const fileInput =
+                                              document.querySelector(
+                                                'input[type="file"][name="foto"]',
+                                              );
+                                            if (fileInput) fileInput.value = "";
+                                          }}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-neutral-500">
+                                      Format: JPG, PNG, WEBP. Maks 5MB.
+                                      Kosongkan jika tidak ingin mengubah foto
+                                      profil.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
                             </FormControl>
                             <FormMessage className="text-red-500 text-xs" />
                           </FormItem>
