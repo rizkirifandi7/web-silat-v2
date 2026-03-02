@@ -114,7 +114,7 @@ const formSchema = z
 
 // Konstanta kelas untuk input konsisten
 const inputStyles =
-  "bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
+  "w-full bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
 
 export function EditEvent({ open, setOpen, event }) {
   const queryClient = useQueryClient();

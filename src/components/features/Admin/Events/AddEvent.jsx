@@ -100,6 +100,9 @@ const formSchema = z
     isFree: z.boolean().default(true),
     price: z.string().optional(),
     image: z.any().optional(),
+    status: z
+      .enum(["draft", "published", "ongoing", "completed", "cancelled"])
+      .default("published"),
   })
   .refine(
     (data) => {
@@ -116,7 +119,7 @@ const formSchema = z
 
 // Konstanta kelas untuk input konsisten
 const inputStyles =
-  "bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
+  "w-full bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-900 focus-visible:border-neutral-900 transition-all rounded-lg shadow-sm";
 
 export function AddEvent() {
   const [open, setOpen] = useState(false);
@@ -130,6 +133,7 @@ export function AddEvent() {
       title: "",
       description: "",
       eventType: "seminar",
+      status: "",
       capacity: "",
       location: "",
       isFree: true,
@@ -161,6 +165,7 @@ export function AddEvent() {
     formData.append("location", values.location || "");
     formData.append("capacity", values.capacity);
     formData.append("isFree", values.isFree);
+    formData.append("status", values.status);
 
     if (!values.isFree) {
       formData.append("price", values.price);
@@ -509,6 +514,38 @@ export function AddEvent() {
                             className={inputStyles}
                           />
                         </FormControl>
+                        <FormMessage className="text-red-500 text-xs" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                          Status Event
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={inputStyles}>
+                              <SelectValue placeholder="Pilih status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-white border-neutral-200 text-neutral-900 rounded-xl shadow-md">
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="published">Published</SelectItem>
+                            <SelectItem value="ongoing">Ongoing</SelectItem>
+                            <SelectItem value="completed">Selesai</SelectItem>
+                            <SelectItem value="cancelled">
+                              Dibatalkan
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage className="text-red-500 text-xs" />
                       </FormItem>
                     )}
