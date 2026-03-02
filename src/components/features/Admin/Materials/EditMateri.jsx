@@ -67,6 +67,7 @@ const formSchema = z.object({
   }),
   isActive: z.boolean().default(true),
   file: z.any().optional(),
+  fileUrl: z.string().optional(),
 });
 
 // Konstanta style input
@@ -89,8 +90,11 @@ export function EditMateri({ open, setOpen, material }) {
       accessLevel: "anggota_only",
       isActive: true,
       file: null,
+      fileUrl: "",
     },
   });
+
+  const [sourceType, setSourceType] = useState("file"); // "file" or "url"
 
   useEffect(() => {
     if (material) {
@@ -103,8 +107,10 @@ export function EditMateri({ open, setOpen, material }) {
         accessLevel: material.accessLevel || "anggota_only",
         isActive: material.isActive !== undefined ? material.isActive : true,
         file: null,
+        fileUrl: material.fileUrl || "",
       });
       setFileName(null);
+      setSourceType(material.fileId ? "file" : "url");
     }
   }, [material, form]);
 
@@ -121,18 +127,36 @@ export function EditMateri({ open, setOpen, material }) {
   });
 
   const onSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("title", values.title);
-    formData.append("description", values.description || "");
-    formData.append("type", values.type);
-    formData.append("category", values.category);
-    formData.append("sabuk", values.sabuk);
-    formData.append("accessLevel", values.accessLevel);
-    formData.append("isActive", values.isActive);
-    if (values.file && values.file[0]) {
-      formData.append("file", values.file[0]);
+    if (sourceType === "file") {
+      const formData = new FormData();
+      formData.append("title", values.title);
+      formData.append("description", values.description || "");
+      formData.append("type", values.type);
+      formData.append("category", values.category);
+      formData.append("sabuk", values.sabuk);
+      formData.append("accessLevel", values.accessLevel);
+      formData.append("isActive", values.isActive);
+      if (values.file && values.file[0]) {
+        formData.append("file", values.file[0]);
+      }
+      updateMutation.mutate(formData);
+    } else {
+      if (!values.fileUrl || values.fileUrl.trim() === "") {
+        form.setError("fileUrl", { message: "URL wajib diisi" });
+        return;
+      }
+      const payload = {
+        title: values.title,
+        description: values.description || "",
+        type: values.type,
+        category: values.category,
+        sabuk: values.sabuk,
+        accessLevel: values.accessLevel,
+        isActive: values.isActive,
+        fileUrl: values.fileUrl.trim(),
+      };
+      updateMutation.mutate(payload);
     }
-    updateMutation.mutate(formData);
   };
 
   const isLoading = updateMutation.isPending;
@@ -143,6 +167,7 @@ export function EditMateri({ open, setOpen, material }) {
     setTimeout(() => {
       form.reset();
       setFileName(null);
+      setSourceType("file");
     }, 300);
   };
 
@@ -190,67 +215,121 @@ export function EditMateri({ open, setOpen, material }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-4">
                 {/* KOLOM KIRI */}
                 <div className="space-y-6">
-                  {/* UPLOAD FILE BARU (REPLACE EXISTING) */}
-                  <FormField
-                    control={form.control}
-                    name="file"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center justify-between mb-2">
-                          <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
-                            Ganti File Materi (Opsional)
-                          </FormLabel>
-                        </div>
-                        <FormControl>
-                          <div
-                            className={`relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl transition-colors cursor-pointer overflow-hidden ${
-                              form.formState.errors.file
-                                ? "border-red-400 bg-red-50"
-                                : "border-neutral-300 bg-white hover:bg-neutral-50"
-                            }`}
-                            onClick={() => fileInputRef.current?.click()}
-                          >
-                            <Input
-                              type="file"
-                              accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.avi,.jpg,.jpeg,.png"
-                              className="hidden"
-                              ref={fileInputRef}
-                              onChange={(e) => handleFileChange(e, field)}
-                            />
+                  {/* SOURCE TYPE TOGGLE */}
+                  <div className="space-y-3">
+                    <FormLabel className="text-neutral-600 text-xs uppercase tracking-wider font-semibold">
+                      Ubah Sumber Materi (Opsional)
+                    </FormLabel>
+                    <div className="flex p-1 bg-neutral-200/50 rounded-lg">
+                      <button
+                        type="button"
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${
+                          sourceType === "file"
+                            ? "bg-white text-neutral-900 shadow-sm"
+                            : "text-neutral-500 hover:text-neutral-700"
+                        }`}
+                        onClick={() => {
+                          setSourceType("file");
+                          form.clearErrors("fileUrl");
+                        }}
+                      >
+                        <UploadCloud className="w-4 h-4" /> Upload File Baru
+                      </button>
+                      <button
+                        type="button"
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${
+                          sourceType === "url"
+                            ? "bg-white text-neutral-900 shadow-sm"
+                            : "text-neutral-500 hover:text-neutral-700"
+                        }`}
+                        onClick={() => {
+                          setSourceType("url");
+                          form.clearErrors("file");
+                        }}
+                      >
+                        <LinkIcon className="w-4 h-4" /> Tautan URL Baru
+                      </button>
+                    </div>
+                  </div>
 
-                            {fileName ? (
-                              <div className="flex flex-col items-center justify-center text-neutral-900 text-center p-4">
-                                <div className="p-2 bg-neutral-900 text-white rounded-full mb-2 shadow-sm">
-                                  <UploadCloud className="w-5 h-5" />
-                                </div>
-                                <p className="text-sm font-semibold truncate max-w-[200px]">
-                                  {fileName}
-                                </p>
-                                <p className="text-[11px] text-neutral-500 mt-1">
-                                  Siap diunggah menggantikan file lama
-                                </p>
+                  {/* UPLOAD FILE ATAU URL INPUT */}
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                    {sourceType === "file" ? (
+                      <FormField
+                        control={form.control}
+                        name="file"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div
+                                className={`relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl transition-colors cursor-pointer overflow-hidden ${
+                                  form.formState.errors.file
+                                    ? "border-red-400 bg-red-50"
+                                    : "border-neutral-300 bg-white hover:bg-neutral-50"
+                                }`}
+                                onClick={() => fileInputRef.current?.click()}
+                              >
+                                <Input
+                                  type="file"
+                                  accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mov,.avi,.jpg,.jpeg,.png"
+                                  className="hidden"
+                                  ref={fileInputRef}
+                                  onChange={(e) => handleFileChange(e, field)}
+                                />
+
+                                {fileName ? (
+                                  <div className="flex flex-col items-center justify-center text-neutral-900 text-center p-4">
+                                    <div className="p-2 bg-neutral-900 text-white rounded-full mb-2 shadow-sm">
+                                      <UploadCloud className="w-5 h-5" />
+                                    </div>
+                                    <p className="text-sm font-semibold truncate max-w-[200px]">
+                                      {fileName}
+                                    </p>
+                                    <p className="text-[11px] text-neutral-500 mt-1">
+                                      Siap diunggah menggantikan file lama
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-center justify-center text-neutral-500 space-y-2">
+                                    <div className="p-2 bg-neutral-50 rounded-full shadow-sm ring-1 ring-neutral-200">
+                                      <UploadCloud className="w-5 h-5 text-neutral-400" />
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-sm font-medium text-neutral-700">
+                                        Klik untuk memilih file baru
+                                      </p>
+                                      <p className="text-[10px] mt-1 text-neutral-400">
+                                        Akan menimpa materi saat ini
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                            ) : (
-                              <div className="flex flex-col items-center justify-center text-neutral-500 space-y-2">
-                                <div className="p-2 bg-neutral-50 rounded-full shadow-sm ring-1 ring-neutral-200">
-                                  <UploadCloud className="w-5 h-5 text-neutral-400" />
-                                </div>
-                                <div className="text-center">
-                                  <p className="text-sm font-medium text-neutral-700">
-                                    Klik untuk memilih file baru
-                                  </p>
-                                  <p className="text-[10px] mt-1 text-neutral-400">
-                                    Akan menimpa file materi saat ini
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-red-500 text-xs text-center" />
-                      </FormItem>
+                            </FormControl>
+                            <FormMessage className="text-red-500 text-xs text-center" />
+                          </FormItem>
+                        )}
+                      />
+                    ) : (
+                      <FormField
+                        control={form.control}
+                        name="fileUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                type="url"
+                                placeholder="https://youtube.com/..."
+                                className={inputStyles}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500 text-xs border border-red-50 p-2 rounded bg-red-50/50 block" />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
+                  </div>
 
                   {/* INFO FILE LAMA / URL LAMA */}
                   {!fileName && material?.fileUrl && (
