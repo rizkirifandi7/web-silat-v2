@@ -15,12 +15,13 @@ import {
   Loader2,
 } from "lucide-react";
 import Script from "next/script";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getEventById,
   createEventPayment,
   registerToEvent,
   checkRegistration,
+  syncPaymentStatus,
 } from "@/lib/api/event";
 import useAuthStore from "@/store/useAuthStore";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ const EventDetailPage = () => {
   const params = useParams();
   const id = params?.id;
   const user = useAuthStore((state) => state.user);
+  const queryClient = useQueryClient();
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ["event", id],
@@ -67,6 +69,7 @@ const EventDetailPage = () => {
     onSuccess: () => {
       toast.success("Pendaftaran berhasil!");
       setRegistrationSuccess(true);
+      queryClient.invalidateQueries(["event", id]);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Gagal mendaftar event.");
@@ -77,11 +80,18 @@ const EventDetailPage = () => {
   const paymentMutation = useMutation({
     mutationFn: createEventPayment,
     onSuccess: (response) => {
-      const { midtransToken } = response.data;
+      const { midtransToken, payment } = response.data;
       if (window.snap) {
         setIsRegisterOpen(false);
         window.snap.pay(midtransToken, {
-          onSuccess: () => {
+          onSuccess: async () => {
+            try {
+              // Sync manually because local webhook won't be triggered
+              await syncPaymentStatus(payment.midtransOrderId);
+              queryClient.invalidateQueries(["event", id]);
+            } catch (error) {
+              console.error("Failed to sync status", error);
+            }
             toast.success("Pembayaran berhasil! Anda terdaftar di event ini.");
             setRegistrationSuccess(true);
             setIsRegisterOpen(true);
@@ -348,24 +358,33 @@ const EventDetailPage = () => {
                 )}
 
                 <div className="space-y-4 mb-8">
-                  <Button
-                    size="lg"
-                    className="w-full h-12 text-base font-black uppercase tracking-widest skew-x-[-10deg] shadow-lg shadow-primary/20 rounded-none"
-                    onClick={() => setIsRegisterOpen(true)}
-                    disabled={
-                      event.status !== "published" || isAlreadyRegistered
-                    }
-                  >
-                    <span className="skew-x-10">
-                      {event.status !== "published"
-                        ? "Pendaftaran Ditutup"
-                        : isAlreadyRegistered
-                          ? "Sudah Terdaftar"
+                  {isAlreadyRegistered ? (
+                    <Button
+                      size="lg"
+                      disabled
+                      className="w-full h-12 text-base font-black uppercase tracking-widest skew-x-[-10deg] rounded-none bg-green-600 hover:bg-green-700 text-white opacity-100 cursor-default"
+                    >
+                      <span className="skew-x-10 flex items-center justify-center gap-2">
+                        <CheckCircle2 className="w-5 h-5" />
+                        Anda Telah Terdaftar
+                      </span>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      className="w-full h-12 text-base font-black uppercase tracking-widest skew-x-[-10deg] shadow-lg shadow-primary/20 rounded-none"
+                      onClick={() => setIsRegisterOpen(true)}
+                      disabled={event.status !== "published"}
+                    >
+                      <span className="skew-x-10">
+                        {event.status !== "published"
+                          ? "Pendaftaran Ditutup"
                           : event.isFree || event.price === 0
                             ? "Daftar Sekarang"
                             : "Daftar & Bayar"}
-                    </span>
-                  </Button>
+                      </span>
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="lg"

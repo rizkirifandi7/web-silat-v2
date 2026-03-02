@@ -18,14 +18,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(amount);
-};
-
 export default function MemberEventsPage() {
   const { user } = useAuthStore();
 
@@ -77,7 +69,7 @@ export default function MemberEventsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {registrations.map((registration) => {
-            const event = registration.Event;
+            const event = registration.event;
             if (!event) return null;
 
             return (
@@ -135,19 +127,19 @@ export default function MemberEventsPage() {
                     </span>
                     <Badge
                       variant={
-                        registration.paymentStatus === "paid"
+                        registration.payment?.paymentStatus === "settlement"
                           ? "default"
-                          : registration.paymentStatus === "pending"
+                          : registration.payment?.paymentStatus === "pending"
                             ? "secondary"
                             : "destructive"
                       }
                       className="uppercase text-[10px]"
                     >
-                      {registration.paymentStatus === "paid"
+                      {registration.payment?.paymentStatus === "settlement"
                         ? "Lunas"
-                        : registration.paymentStatus === "pending"
+                        : registration.payment?.paymentStatus === "pending"
                           ? "Menunggu"
-                          : registration.paymentStatus}
+                          : registration.payment?.paymentStatus}
                     </Badge>
                   </div>
                 </CardContent>

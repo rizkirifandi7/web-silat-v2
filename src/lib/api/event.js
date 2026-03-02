@@ -30,6 +30,11 @@ export const createEventPayment = async (data) => {
   return api.post("/payments", data);
 };
 
+// Sync payment status after midtrans success callback
+export const syncPaymentStatus = async (orderId) => {
+  return api.get(`/payments/status/${orderId}`);
+};
+
 // Register to event (free events)
 export const registerToEvent = async (data) => {
   return api.post("/registrations", data);
