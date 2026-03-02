@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Mail,
@@ -9,6 +11,8 @@ import {
   Youtube,
   Clock,
   Send,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +20,49 @@ import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
 
 const KontakPage = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [status, setStatus] = useState("idle"); // 'idle' | 'loading' | 'success' | 'error'
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("loading");
+    setErrorMessage("");
+
+    try {
+      const res = await fetch("/api/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatus("success");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+        // Optional: Reset status setelah 5 detik
+        setTimeout(() => setStatus("idle"), 5000);
+      } else {
+        setStatus("error");
+        setErrorMessage(data.error || "Gagal mengirim pesan.");
+      }
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage("Terjadi kesalahan jaringan atau server.");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-background pb-0">
       {/* 1. Page Header */}
@@ -150,7 +197,25 @@ const KontakPage = () => {
                 pesan Anda.
               </p>
 
-              <form className="space-y-6">
+              {status === "success" && (
+                <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 text-green-500 rounded-none flex items-start gap-4 skew-x-[-5deg]">
+                  <CheckCircle2 className="w-6 h-6 shrink-0 skew-x-5" />
+                  <p className="font-medium skew-x-5">
+                    Pesan Anda berhasil terkirim! Tim kami akan segera
+                    menindaklanjutinya.
+                  </p>
+                </div>
+              )}
+
+              {status === "error" && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 text-red-500 rounded-none transform skew-x-[-5deg]">
+                  <p className="font-medium skew-x-5">
+                    Gagal mengirim: {errorMessage}
+                  </p>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label
@@ -161,6 +226,10 @@ const KontakPage = () => {
                     </label>
                     <Input
                       id="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      disabled={status === "loading"}
                       placeholder="Nama Anda"
                       className="bg-background h-12 rounded-none border-2 border-zinc-800 focus-visible:ring-0 focus-visible:border-primary transition-colors"
                     />
@@ -175,6 +244,10 @@ const KontakPage = () => {
                     <Input
                       id="email"
                       type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      disabled={status === "loading"}
                       placeholder="email@contoh.com"
                       className="bg-background h-12 rounded-none border-2 border-zinc-800 focus-visible:ring-0 focus-visible:border-primary transition-colors"
                     />
@@ -190,6 +263,10 @@ const KontakPage = () => {
                   </label>
                   <Input
                     id="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    required
+                    disabled={status === "loading"}
                     placeholder="Perihal pesan Anda"
                     className="bg-background h-12 rounded-none border-2 border-zinc-800 focus-visible:ring-0 focus-visible:border-primary transition-colors"
                   />
@@ -204,6 +281,10 @@ const KontakPage = () => {
                   </label>
                   <Textarea
                     id="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    disabled={status === "loading"}
                     placeholder="Tulis pesan Anda di sini..."
                     className="bg-background min-h-[150px] resize-none rounded-none border-2 border-zinc-800 focus-visible:ring-0 focus-visible:border-primary transition-colors"
                   />
@@ -211,10 +292,21 @@ const KontakPage = () => {
 
                 <Button
                   size="lg"
-                  className="w-full h-14 text-base font-bold uppercase tracking-widest rounded-none skew-x-[-10deg] shadow-[4px_4px_0px_0px_var(--color-primary)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="w-full h-14 text-base font-bold uppercase tracking-widest rounded-none skew-x-[-10deg] shadow-[4px_4px_0px_0px_var(--color-primary)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   <span className="skew-x-10 flex items-center justify-center gap-2">
-                    Kirim Pesan <Send className="w-4 h-4 ml-2" />
+                    {status === "loading" ? (
+                      <>
+                        Mengirim{" "}
+                        <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                      </>
+                    ) : (
+                      <>
+                        Kirim Pesan <Send className="w-4 h-4 ml-2" />
+                      </>
+                    )}
                   </span>
                 </Button>
               </form>

@@ -66,7 +66,7 @@ const MemberInfo = ({ data }) => {
     <Card className="w-full max-w-2xl mx-auto overflow-hidden border-0 shadow-xl bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       {/* Banner / Header */}
       <div
-        className={`h-32 w-full relative ${isActive ? "bg-gradient-to-r from-emerald-500/20 via-primary/10 to-transparent" : "bg-gradient-to-r from-rose-500/20 via-destructive/10 to-transparent"}`}
+        className={`h-32 w-full relative ${isActive ? "bg-linear-to-r from-emerald-500/20 via-primary/10 to-transparent" : "bg-linear-to-r from-rose-500/20 via-destructive/10 to-transparent"}`}
       >
         <div className="absolute top-4 right-4 z-10">
           <Badge
