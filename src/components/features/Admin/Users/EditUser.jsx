@@ -42,6 +42,7 @@ import Image from "next/image";
 import { Loader2, Pencil, Shield, User, Medal, X } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { URUTAN_SABUK } from "@/constant/data";
+import { ImageCropper } from "@/components/ui/ImageCropper";
 
 // Skema disamakan persis dengan AddUser
 const formSchema = z.object({
@@ -85,6 +86,8 @@ const inputStyles =
 export function EditUser({ user }) {
   const [open, setOpen] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(user?.foto_url || null);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState(null);
   const queryClient = useQueryClient();
 
   const userId = user?.id;
@@ -456,10 +459,10 @@ export function EditUser({ user }) {
                                         onChange={(e) => {
                                           const file = e.target.files[0];
                                           if (file) {
-                                            onChange(file);
                                             const reader = new FileReader();
                                             reader.onloadend = () => {
-                                              setPhotoPreview(reader.result);
+                                              setRawImageSrc(reader.result);
+                                              setCropperOpen(true);
                                             };
                                             reader.readAsDataURL(file);
                                           } else {
@@ -469,6 +472,8 @@ export function EditUser({ user }) {
                                               userDetail?.foto_url || null,
                                             );
                                           }
+                                          // Allow reselecting same file
+                                          e.target.value = "";
                                         }}
                                         {...fieldProps}
                                       />
@@ -498,12 +503,27 @@ export function EditUser({ user }) {
                                     <p className="text-[10px] text-neutral-500">
                                       Format: JPG, PNG, WEBP. Maks 5MB.
                                       Kosongkan jika tidak ingin mengubah foto
-                                      profil.
+                                      profil. Saran: Gunakan alat potong gambar
+                                      jika foto tidak persegi.
                                     </p>
                                   </div>
                                 </div>
                               </div>
                             </FormControl>
+
+                            <ImageCropper
+                              open={cropperOpen}
+                              setOpen={setCropperOpen}
+                              imageSrc={rawImageSrc}
+                              onCropComplete={(croppedFile) => {
+                                // Set in form context
+                                onChange(croppedFile);
+                                // Set preview BaseURL
+                                const objectUrl =
+                                  URL.createObjectURL(croppedFile);
+                                setPhotoPreview(objectUrl);
+                              }}
+                            />
                             <FormMessage className="text-red-500 text-xs" />
                           </FormItem>
                         )}

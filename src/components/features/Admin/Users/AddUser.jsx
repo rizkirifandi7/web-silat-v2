@@ -49,6 +49,7 @@ import {
   X,
 } from "lucide-react";
 import { URUTAN_SABUK } from "@/constant/data";
+import { ImageCropper } from "@/components/ui/ImageCropper";
 
 const formSchema = z.object({
   nama: z.string().min(1, "Nama wajib diisi"),
@@ -91,6 +92,8 @@ const inputStyles =
 export function AddUser() {
   const [open, setOpen] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState(null);
   const queryClient = useQueryClient();
 
   const form = useForm({
@@ -387,10 +390,10 @@ export function AddUser() {
                                       onChange={(e) => {
                                         const file = e.target.files[0];
                                         if (file) {
-                                          onChange(file);
                                           const reader = new FileReader();
                                           reader.onloadend = () => {
-                                            setPhotoPreview(reader.result);
+                                            setRawImageSrc(reader.result);
+                                            setCropperOpen(true);
                                           };
                                           reader.readAsDataURL(file);
                                         } else {
@@ -423,12 +426,27 @@ export function AddUser() {
                                   </div>
                                   <p className="text-[10px] text-neutral-500">
                                     Format: JPG, PNG, WEBP. Maks 5MB. Proporsi
-                                    direkomendasikan 1:1.
+                                    direkomendasikan 1:1. Saran: Gunakan alat
+                                    potong gambar jika foto tidak persegi.
                                   </p>
                                 </div>
                               </div>
                             </div>
                           </FormControl>
+
+                          <ImageCropper
+                            open={cropperOpen}
+                            setOpen={setCropperOpen}
+                            imageSrc={rawImageSrc}
+                            onCropComplete={(croppedFile) => {
+                              // Set in form context
+                              onChange(croppedFile);
+                              // Set preview BaseURL
+                              const objectUrl =
+                                URL.createObjectURL(croppedFile);
+                              setPhotoPreview(objectUrl);
+                            }}
+                          />
                           <FormMessage className="text-red-500 text-xs" />
                         </FormItem>
                       )}
