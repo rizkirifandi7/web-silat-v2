@@ -20,6 +20,7 @@ import {
   getEventById,
   createEventPayment,
   registerToEvent,
+  checkRegistration,
 } from "@/lib/api/event";
 import useAuthStore from "@/store/useAuthStore";
 import { toast } from "sonner";
@@ -49,6 +50,16 @@ const EventDetailPage = () => {
   const event = eventResponse?.data || null;
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+
+  // Check if user is already registered
+  const { data: checkData } = useQuery({
+    queryKey: ["checkRegistration", id, user?.id],
+    queryFn: () => checkRegistration(id, user?.id),
+    enabled: !!user?.id && !!id,
+  });
+
+  const isAlreadyRegistered =
+    checkData?.data?.isRegistered || registrationSuccess;
 
   // Mutation for free event registration
   const registerMutation = useMutation({
@@ -342,13 +353,13 @@ const EventDetailPage = () => {
                     className="w-full h-12 text-base font-black uppercase tracking-widest skew-x-[-10deg] shadow-lg shadow-primary/20 rounded-none"
                     onClick={() => setIsRegisterOpen(true)}
                     disabled={
-                      event.status !== "published" || registrationSuccess
+                      event.status !== "published" || isAlreadyRegistered
                     }
                   >
                     <span className="skew-x-10">
                       {event.status !== "published"
                         ? "Pendaftaran Ditutup"
-                        : registrationSuccess
+                        : isAlreadyRegistered
                           ? "Sudah Terdaftar"
                           : event.isFree || event.price === 0
                             ? "Daftar Sekarang"

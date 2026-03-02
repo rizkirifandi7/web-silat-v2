@@ -75,7 +75,7 @@ const EventsPage = () => {
       getEvents({
         category: activeCategory !== "Semua" ? activeCategory : undefined,
         search: searchQuery || undefined,
-        status: "published", // Show only published events to public
+        status: "published",
       }),
   });
 

@@ -39,3 +39,13 @@ export const registerToEvent = async (data) => {
 export const checkRegistration = async (eventId, userId) => {
   return api.get(`/registrations/check/${eventId}/${userId}`);
 };
+
+// Get user's event registrations
+export const getRegistrationsByUser = async (userId) => {
+  return api.get(`/registrations/user/${userId}`);
+};
+
+// Get event's participants
+export const getRegistrationsByEvent = async (eventId) => {
+  return api.get(`/registrations/event/${eventId}`);
+};

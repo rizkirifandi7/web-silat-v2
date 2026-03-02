@@ -1,10 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  IconDashboard,
-  IconUser,
-} from "@tabler/icons-react";
+import { IconDashboard, IconUser } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/layout/Sidebar/nav-main";
 import {
@@ -17,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import Link from "next/link";
-import { LibraryBig } from "lucide-react";
+import { LibraryBig, Calendar } from "lucide-react";
 
 const data = {
   navMain: [
@@ -30,6 +27,11 @@ const data = {
       title: "Materi",
       url: "/member/materi",
       icon: LibraryBig,
+    },
+    {
+      title: "Event Saya",
+      url: "/member/events",
+      icon: Calendar,
     },
     {
       title: "Profil",

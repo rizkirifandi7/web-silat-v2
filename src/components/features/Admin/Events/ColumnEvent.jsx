@@ -18,6 +18,7 @@ import { useState } from "react";
 import { EditEvent } from "./EditEvent";
 import { DeleteEvent } from "./DeleteEvent";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("id-ID", {
@@ -184,6 +185,17 @@ const EventActions = ({ event }) => {
 
   return (
     <div className="flex items-center justify-end gap-2">
+      <Button
+        asChild
+        variant="outline"
+        size="icon"
+        className="h-8 w-8 text-primary hover:bg-primary hover:text-white"
+        title="Lihat Peserta"
+      >
+        <Link href={`/admin/event/${event.id}/participants`}>
+          <Users className="h-4 w-4" />
+        </Link>
+      </Button>
       <Button
         variant="outline"
         size="icon"
