@@ -153,7 +153,7 @@ const GaleriPage = () => {
                     </span>
                   </div>
 
-                  <h3 className="font-black text-xl leading-tight uppercase italic text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="font-black text-xl leading-tight capitalize italic text-foreground group-hover:text-primary transition-colors line-clamp-2">
                     {item.title}
                   </h3>
                 </div>
@@ -223,7 +223,7 @@ const GaleriPage = () => {
                           selectedImage.category}
                       </span>
                     </span>
-                    <h2 className="text-2xl md:text-3xl font-black text-white mb-4 leading-tight uppercase italic">
+                    <h2 className="text-2xl md:text-3xl font-black text-white mb-4 leading-tight capitalize italic">
                       {selectedImage.title}
                     </h2>
                     <div className="flex items-center gap-2 text-zinc-400 mb-8">

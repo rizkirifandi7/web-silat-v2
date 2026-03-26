@@ -25,7 +25,7 @@ const InfoItem = ({ icon: Icon, label, value }) => (
       <Icon className="w-4 h-4 text-primary shrink-0" />
     </div>
     <div className="space-y-1 w-full">
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold font-mono">
+      <p className="text-[10px] tracking-wider text-muted-foreground font-bold font-mono">
         {label}
       </p>
       <p className="text-sm font-semibold text-foreground/90 capitalize leading-snug">

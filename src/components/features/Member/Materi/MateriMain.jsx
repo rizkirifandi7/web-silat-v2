@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { getMaterials, getMaterialById } from "@/lib/api/materi";
 import { useQuery } from "@tanstack/react-query";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import useAuthStore from "@/store/useAuthStore";
 import { URUTAN_SABUK } from "@/constant/data";
@@ -98,9 +97,6 @@ const MateriMain = () => {
     "Belum punya";
   const anggotaSabukIdx = getSabukIndex(anggotaSabuk);
 
-  console.log("SABUK USER:", anggotaSabuk, "IDX:", anggotaSabukIdx);
-  console.log("MATERIALS DATA RENDER:", materialsData);
-
   return (
     <div className="flex flex-col lg:flex-row gap-6 w-full lg:h-[calc(100vh-8rem)] min-h-screen lg:min-h-0">
       {/* === MAIN CONTENT (Video/PDF Player) === */}
@@ -180,6 +176,18 @@ const MateriMain = () => {
                 </div>
               )}
             </div>
+
+            {/* Deskripsi Materi */}
+            {selectedMaterial.description && (
+              <div className="p-5 border-t border-neutral-100 bg-white shrink-0 lg:max-h-[35vh] overflow-y-auto custom-scrollbar">
+                <h3 className="text-sm font-bold text-neutral-900 mb-1.5 uppercase tracking-wider">
+                  Deskripsi Materi
+                </h3>
+                <div className="text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">
+                  {selectedMaterial.description}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -194,7 +202,7 @@ const MateriMain = () => {
           </h2>
         </div>
 
-        <ScrollArea className="flex-1 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar">
           {loading ? (
             <div className="p-4 space-y-3">
               {[...Array(6)].map((_, i) => (
@@ -283,7 +291,7 @@ const MateriMain = () => {
               )}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </aside>
     </div>
   );
