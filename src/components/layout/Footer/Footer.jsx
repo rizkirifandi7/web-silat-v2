@@ -5,11 +5,10 @@ import {
   Facebook,
   Instagram,
   Youtube,
-  Twitter,
+  Music2,
   MapPin,
   Phone,
   Mail,
-  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -52,14 +51,48 @@ const Footer = () => {
               membangun karakter generasi muda yang tangguh dan berakhlak mulia.
             </p>
             <div className="flex gap-3">
-              {[Facebook, Instagram, Youtube, Twitter].map((Icon, idx) => (
+              {[
+                {
+                  Icon: Instagram,
+                  href: "https://www.instagram.com/pusamadaindonesia?igsh=MTFkam94ZDdkZ3g0NQ==",
+                  label: "Instagram",
+                },
+                {
+                  Icon: Facebook,
+                  href: "https://www.facebook.com/share/1ECfhVUFRx/",
+                  label: "Facebook",
+                },
+                {
+                  Icon: Youtube,
+                  href: "#",
+                  label: "Youtube",
+                },
+                {
+                  Icon: Music2,
+                  href: "https://www.tiktok.com/@pusamadaindonesia?_t=ZS-90IWTnMc3NZ&_r=1",
+                  label: "Tiktok",
+                },
+              ].map(({ Icon, href, label }) => (
                 <Button
-                  key={idx}
+                  key={label}
+                  asChild
                   variant="outline"
                   size="icon"
                   className="w-10 h-10 rounded-none skew-x-[-10deg] border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-primary hover:text-white hover:border-primary transition-all duration-300"
                 >
-                  <Icon className="w-5 h-5 skew-x-10" />
+                  <Link
+                    href={href}
+                    target={href.startsWith("http") ? "_blank" : undefined}
+                    rel={
+                      href.startsWith("http")
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
+                    aria-label={label}
+                    title={label}
+                  >
+                    <Icon className="w-5 h-5 skew-x-10" />
+                  </Link>
                 </Button>
               ))}
             </div>
