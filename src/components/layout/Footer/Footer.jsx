@@ -64,7 +64,7 @@ const Footer = () => {
                 },
                 {
                   Icon: Youtube,
-                  href: "#",
+                  href: "https://www.youtube.com/channel/UCWO5nBKUDI6f81A2yu4XwmQ",
                   label: "Youtube",
                 },
                 {
