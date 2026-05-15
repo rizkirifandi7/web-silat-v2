@@ -2,7 +2,7 @@
 
 import { IconLogout, IconUserCircle } from "@tabler/icons-react";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import useAuthStore from "@/store/useAuthStore";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

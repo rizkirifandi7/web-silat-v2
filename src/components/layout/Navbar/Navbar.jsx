@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { Menu, X, LogOut, User, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,17 +17,21 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useAuthStore from "@/store/useAuthStore";
 
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslations } from "next-intl";
+
 const navLinks = [
-  { href: "/", label: "Beranda" },
-  { href: "/tentang", label: "Tentang" },
-  { href: "/galeri", label: "Galeri" },
-  { href: "/katalog", label: "Katalog" },
-  { href: "/donasi", label: "Donasi" },
-  { href: "/events", label: "Event" },
-  { href: "/kontak", label: "Kontak" },
+  { href: "/", labelKey: "home" },
+  { href: "/tentang", labelKey: "about" },
+  { href: "/galeri", labelKey: "gallery" },
+  { href: "/katalog", labelKey: "catalog" },
+  { href: "/donasi", labelKey: "donate" },
+  { href: "/events", labelKey: "events" },
+  { href: "/kontak", labelKey: "contact" },
 ];
 
 const Navbar = () => {
+  const t = useTranslations("Navbar");
   const { user, isAuthenticated, logout } = useAuthStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -110,7 +114,7 @@ const Navbar = () => {
                       : "text-black/90 hover:text-black",
               )}
             >
-              {link.label}
+              {t(link.labelKey)}
               {pathname === link.href && (
                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary skew-x-[-10deg]" />
               )}
@@ -120,6 +124,11 @@ const Navbar = () => {
 
         {/* Action Buttons */}
         <div className="hidden lg:flex items-center gap-4">
+          <LanguageSwitcher
+            isScrolled={isScrolled}
+            isDarkHeaderPage={isDarkHeaderPage}
+          />
+
           {!isAuthenticated ? (
             <>
               <Button
@@ -134,7 +143,7 @@ const Navbar = () => {
                       : "text-black hover:text-black md:hover:bg-white/10",
                 )}
               >
-                <Link href="/login">Masuk</Link>
+                <Link href="/login">{t("login")}</Link>
               </Button>
               <Button
                 asChild
@@ -144,7 +153,7 @@ const Navbar = () => {
                 )}
               >
                 <Link href="/register">
-                  <span className="skew-x-10">DAFTAR</span>
+                  <span className="skew-x-10">{t("register")}</span>
                 </Link>
               </Button>
             </>
@@ -215,24 +224,30 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Toggle */}
-        <button
-          className="lg:hidden p-2 text-foreground"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu
-              className={cn(
-                "w-6 h-6",
-                !isScrolled &&
-                  (isDarkHeaderPage
-                    ? "text-white md:text-white"
-                    : "md:text-black"),
-              )}
-            />
-          )}
-        </button>
+        <div className="flex lg:hidden items-center gap-2">
+          <LanguageSwitcher
+            isScrolled={isScrolled}
+            isDarkHeaderPage={isDarkHeaderPage}
+          />
+          <button
+            className="p-2 text-foreground"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu
+                className={cn(
+                  "w-6 h-6",
+                  !isScrolled &&
+                    (isDarkHeaderPage
+                      ? "text-white md:text-white"
+                      : "md:text-black"),
+                )}
+              />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -250,14 +265,14 @@ const Navbar = () => {
               )}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
           <div className="flex flex-col gap-3 mt-4">
             {!isAuthenticated ? (
               <div className="grid grid-cols-2 gap-4">
                 <Button variant="outline" asChild className="w-full">
-                  <Link href="/login">Masuk</Link>
+                  <Link href="/login">{t("login")}</Link>
                 </Button>
                 <Button
                   asChild

@@ -1,9 +1,11 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { ArrowRight, MapPin, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 const ContactLanding = () => {
+  const t = useTranslations("Contact");
   return (
     <section className="relative py-24 overflow-hidden bg-background">
       {/* Dynamic Background */}
@@ -29,14 +31,14 @@ const ContactLanding = () => {
             <div className="inline-block relative">
               <div className="absolute inset-0 bg-primary/20 skew-x-[-15deg] rounded-sm transform scale-105" />
               <span className="relative px-3 py-1 text-primary font-bold tracking-widest uppercase text-sm z-10">
-                Bergabung Bersama Kami
+                {t("section_title")}
               </span>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase italic leading-none">
-              Mulai Perjalanan <br />
+              {t("title_span1")} <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-red-600 relative inline-block pr-2">
-                Menjadi Pendekar
+                {t("title_span2")}
                 <svg
                   className="absolute w-full h-3 -bottom-1 left-0 text-primary opacity-60"
                   viewBox="0 0 200 9"
@@ -62,8 +64,8 @@ const ContactLanding = () => {
               {[
                 {
                   icon: MapPin,
-                  title: "Lokasi Latihan",
-                  desc: "Kampung Sukarasa, Arjasari, Kab. Bandung",
+                  title: t("loc_title"),
+                  desc: t("loc_desc"),
                 },
                 { icon: Mail, title: "Email", desc: "info@pusamada.id" },
                 { icon: Phone, title: "WhatsApp", desc: "+62 823-4393-6639" },
@@ -93,7 +95,7 @@ const ContactLanding = () => {
               >
                 <Link href="/kontak">
                   <span className="skew-x-10 flex items-center gap-2">
-                    HUBUNGI KAMI <ArrowRight className="w-5 h-5" />
+                    {t("cta")} <ArrowRight className="w-5 h-5" />
                   </span>
                 </Link>
               </Button>
@@ -118,7 +120,7 @@ const ContactLanding = () => {
             />
 
             <div className="absolute bottom-0 right-0 bg-foreground text-background p-4 font-bold text-xs uppercase tracking-widest z-20">
-              Markas Besar PUSAMADA
+              {t("map_label")}
             </div>
           </div>
         </div>

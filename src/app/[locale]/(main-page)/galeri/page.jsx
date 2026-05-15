@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Search, X, ZoomIn } from "lucide-react";
 import {
@@ -22,16 +23,17 @@ const categories = [
   "other",
 ];
 
-const categoryLabels = {
-  Semua: "Semua",
-  event: "Event",
-  training: "Latihan",
-  competition: "Kejuaraan",
-  ceremony: "Upacara",
-  other: "Lainnya",
+const categoryLabelsKeys = {
+  Semua: "all",
+  event: "event",
+  training: "training",
+  competition: "competition",
+  ceremony: "ceremony",
+  other: "other",
 };
 
 const GaleriPage = () => {
+  const t = useTranslations("Galeri");
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -78,11 +80,11 @@ const GaleriPage = () => {
           <div className="inline-block relative mb-4">
             <div className="absolute inset-0 bg-primary/20 skew-x-[-15deg] rounded-sm transform scale-105" />
             <span className="relative px-3 py-1 text-primary font-bold tracking-widest uppercase text-sm z-10">
-              Galeri Kami
+              {t("subtitle")}
             </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground uppercase italic mb-6 drop-shadow-xl">
-            Dokumentasi <span className="text-primary">Kegiatan</span>
+            {t("title_1")} <span className="text-primary">{t("title_2")}</span>
           </h1>
           <p className="text-base text-muted-foreground max-w-2xl mx-auto font-medium">
             Merekam jejak perjuangan, prestasi, dan kebersamaan keluarga besar
@@ -105,7 +107,7 @@ const GaleriPage = () => {
                   : "bg-transparent text-muted-foreground border-muted-foreground/30 hover:border-primary hover:text-primary"
               }`}
             >
-              <span className="skew-x-10">{categoryLabels[category]}</span>
+              <span className="skew-x-10">{t(`labels.${categoryLabelsKeys[category]}`)}</span>
             </Button>
           ))}
         </div>
@@ -114,7 +116,7 @@ const GaleriPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
             <div className="col-span-full text-center py-20">
-              Memuat foto...
+              {t("loading")}
             </div>
           ) : (
             galleryItems.map((item) => (
@@ -145,7 +147,7 @@ const GaleriPage = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <span className="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 rounded-none skew-x-[-10deg]">
                       <span className="skew-x-10">
-                        {categoryLabels[item.category] || item.category}
+                        {t(`labels.${categoryLabelsKeys[item.category]}`) || item.category}
                       </span>
                     </span>
                     <span className="text-xs text-muted-foreground font-medium">
@@ -219,7 +221,7 @@ const GaleriPage = () => {
                   <div className="mt-8 md:mt-4">
                     <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 rounded-none skew-x-[-10deg] mb-6">
                       <span className="skew-x-10">
-                        {categoryLabels[selectedImage.category] ||
+                        {t(`labels.${categoryLabelsKeys[selectedImage.category]}`) ||
                           selectedImage.category}
                       </span>
                     </span>

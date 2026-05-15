@@ -20,7 +20,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Archive, Calendar, Camera, HandCoins, IdCard, LibraryBig, Store } from "lucide-react";
 
 const data = {

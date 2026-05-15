@@ -1,0 +1,112 @@
+{
+  "Index": {
+    "title": "Selamat Datang di Silat"
+  },
+  "Navbar": {
+    "home": "Beranda",
+    "about": "Tentang",
+    "gallery": "Galeri",
+    "catalog": "Katalog",
+    "donate": "Donasi",
+    "events": "Event",
+    "contact": "Kontak",
+    "login": "Masuk",
+    "register": "DAFTAR"
+  },
+  "Footer": {
+    "description": "Pusaka Mande Muda Indonesia. Melestarikan budaya pencak silat, membangun karakter generasi muda yang tangguh dan berakhlak mulia.",
+    "explore": "Jelajahi",
+    "services": "Layanan",
+    "contactUs": "Hubungi Kami",
+    "address": "Pasirwangi, Ujungberung, Bandung, Jawa Barat",
+    "copyright": "Penanda Cipta. Seluruh hak cipta dilindungi.",
+    "privacy": "Kebijakan Privasi",
+    "terms": "Syarat Ketentuan",
+    "links": {
+      "about": "Tentang Kami",
+      "events": "Event & Kejuaraan",
+      "gallery": "Galeri Kegiatan",
+      "news": "Berita Terkini",
+      "donate": "Donasi",
+      "catalog": "Katalog Merchandise",
+      "register": "Pendaftaran Anggota",
+      "verify": "Verifikasi Sertifikat"
+    }
+  },
+  "Hero": {
+    "tagline": "Pencak Silat",
+    "motto": "Élmu Luhung Jembar Kabisa, Budi Suci Gede Bakti.",
+    "join": "GABUNG SEKARANG",
+    "verify": "CEK KEANGGOTAAN"
+  },
+  "About": {
+    "section_title": "Tentang Kami",
+    "title_span1": "Melestarikan Budaya,",
+    "title_span2": "Membangun Karakter",
+    "desc_p1_strong": "Pusaka Mande Muda Indonesia (PUSAMADA)",
+    "desc_p1": " hadir sebagai wadah pelestarian seni bela diri Pencak Silat, warisan leluhur yang sarat akan nilai filosofis dan budi pekerti.",
+    "desc_p2": "Kami berkomitmen untuk tidak hanya mencetak pesilat yang tangguh secara fisik, tetapi juga bermental baja, berbudi pekerti luhur, dan menjunjung tinggi nilai-nilai kehormatan serta persaudaraan.",
+    "cta": "PELAJARI SEJARAH KAMI",
+    "quote": "\"Pencak Silat bukan hanya tentang pukulan, tapi tentang kendali diri.\""
+  },
+  "Activities": {
+    "section_title": "Kegiatan Kami",
+    "title_span1": "Agenda &",
+    "title_span2": "Aktivitas",
+    "desc": "Berbagai kegiatan positif untuk membangun generasi muda yang tangguh, berprestasi, dan berakhlak mulia.",
+    "cta": "LIHAT SEMUA",
+    "items": {
+      "item1_title": "Latihan Rutin",
+      "item1_desc": "Pembinaan fisik dan mental secara berkala untuk membentuk karakter pendekar.",
+      "item1_cat": "Utama",
+      "item2_title": "Ujian Kenaikan Tingkat",
+      "item2_desc": "Evaluasi jenjang kemampuan.",
+      "item2_cat": "Evaluasi",
+      "item3_title": "Kejuaraan Silat",
+      "item3_desc": "Meraih prestasi nasional.",
+      "item3_cat": "Prestasi",
+      "item4_title": "Bakti Sosial",
+      "item4_desc": "Pengabdian masyarakat.",
+      "item4_cat": "Sosial",
+      "item5_title": "Pentas Seni",
+      "item5_desc": "Pelestarian budaya.",
+      "item5_cat": "Budaya"
+    }
+  },
+  "Contact": {
+    "section_title": "Bergabung Bersama Kami",
+    "title_span1": "Mulai Perjalanan",
+    "title_span2": "Menjadi Pendekar",
+    "desc": "Siap untuk melatih fisik, mental, dan karakter Anda? Hubungi kami untuk informasi pendaftaran dan jadwal latihan.",
+    "cta": "HUBUNGI KAMI",
+    "loc_title": "Lokasi Latihan",
+    "loc_desc": "Kampung Sukarasa, Arjasari, Kab. Bandung",
+    "map_label": "Markas Besar PUSAMADA"
+  },
+  "Tentang": {
+    "loading": "Memuat Informasi...",
+    "title": "Tentang PUSAMADA",
+    "subtitle_1": "Melestarikan",
+    "subtitle_2": "Budaya",
+    "subtitle_3": "Membangun",
+    "subtitle_4": "Karakter",
+    "subtitle_5": "Nusantara"
+  },
+  "Galeri": {
+    "subtitle": "Galeri Kami",
+    "title_1": "Dokumentasi",
+    "title_2": "Kegiatan",
+    "description": "Merekam jejak perjuangan, prestasi, dan kebersamaan keluarga besar Pusaka Mande Muda Indonesia.",
+    "labels": {
+      "all": "Semua",
+      "event": "Event",
+      "training": "Latihan",
+      "competition": "Kejuaraan",
+      "ceremony": "Upacara",
+      "other": "Lainnya"
+    },
+    "loading": "Memuat foto...",
+    "empty": "Belum ada galeri",
+    "empty_desc": "Belum ada galeri untuk kategori ini."
+  }
+}

@@ -1,7 +1,8 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import {
   Carousel,
   CarouselContent,
@@ -10,41 +11,41 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-const activities = [
-  {
-    title: "Latihan Rutin",
-    description:
-      "Pembinaan fisik dan mental secara berkala untuk membentuk karakter pendekar.",
-    category: "Utama",
-    image: "/pusamada-logo.png", // Placeholder
-  },
-  {
-    title: "Ujian Kenaikan Tingkat",
-    description: "Evaluasi jenjang kemampuan.",
-    category: "Evaluasi",
-    image: "/pusamada-logo.png",
-  },
-  {
-    title: "Kejuaraan Silat",
-    description: "Meraih prestasi nasional.",
-    category: "Prestasi",
-    image: "/pusamada-logo.png",
-  },
-  {
-    title: "Bakti Sosial",
-    description: "Pengabdian masyarakat.",
-    category: "Sosial",
-    image: "/pusamada-logo.png",
-  },
-  {
-    title: "Pentas Seni",
-    description: "Pelestarian budaya.",
-    category: "Budaya",
-    image: "/pusamada-logo.png",
-  },
-];
-
 const KegiatanKami = () => {
+  const t = useTranslations("Activities");
+  const activities = [
+    {
+      title: t("items.item1_title"),
+      description: t("items.item1_desc"),
+      category: t("items.item1_cat"),
+      image: "/pusamada-logo.png",
+    },
+    {
+      title: t("items.item2_title"),
+      description: t("items.item2_desc"),
+      category: t("items.item2_cat"),
+      image: "/pusamada-logo.png",
+    },
+    {
+      title: t("items.item3_title"),
+      description: t("items.item3_desc"),
+      category: t("items.item3_cat"),
+      image: "/pusamada-logo.png",
+    },
+    {
+      title: t("items.item4_title"),
+      description: t("items.item4_desc"),
+      category: t("items.item4_cat"),
+      image: "/pusamada-logo.png",
+    },
+    {
+      title: t("items.item5_title"),
+      description: t("items.item5_desc"),
+      category: t("items.item5_cat"),
+      image: "/pusamada-logo.png",
+    },
+  ];
+
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       {/* Background Image with Overlay */}
@@ -70,13 +71,13 @@ const KegiatanKami = () => {
             <div className="inline-block relative">
               <div className="absolute inset-0 bg-primary/20 skew-x-[-15deg] rounded-sm transform scale-105" />
               <span className="relative px-3 py-1 text-primary font-bold tracking-widest uppercase text-sm z-10">
-                Kegiatan Kami
+                {t("section_title")}
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground text-balance uppercase italic leading-none">
-              Agenda & <br />
+              {t("title_span1")} <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-red-600 relative inline-block pr-2">
-                Aktivitas
+                {t("title_span2")}
                 <svg
                   className="absolute w-full h-3 -bottom-1 left-0 text-primary opacity-60"
                   viewBox="0 0 200 9"
@@ -105,7 +106,7 @@ const KegiatanKami = () => {
             >
               <Link href="/events">
                 <span className="skew-x-10 flex items-center gap-2">
-                  LIHAT SEMUA{" "}
+                  {t("cta")}{" "}
                   <ArrowUpRight className="ml-2 h-4 w-4 group-hover:rotate-45 transition-transform" />
                 </span>
               </Link>

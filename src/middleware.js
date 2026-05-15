@@ -1,49 +1,61 @@
 import { NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
+
+const intlMiddleware = createMiddleware(routing);
 
 export function middleware(request) {
   const token = request.cookies.get("token")?.value;
   const userRole = request.cookies.get("user_role")?.value;
   const { pathname } = request.nextUrl;
 
-  // Define protected routes
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isMemberRoute = pathname.startsWith("/member");
-  const isAuthRoute = pathname === "/login" || pathname === "/register";
+  // Define protected routes (ignoring locale prefix for checks)
+  const isPath = (target) =>
+    pathname.match(new RegExp(`^/(${routing.locales.join("|")})?${target}`));
 
-  // Redirect to login if accessing protected route without token
+  const isAdminRoute = isPath("/admin");
+  const isMemberRoute = isPath("/member");
+  const isAuthRoute = isPath("/login") || isPath("/register");
+
+  const getLocalePath = (path) => {
+    // Avoid appending locale if it already has one, simplified for now relying on intlMiddleware to handle prefixing
+    return path;
+  };
+
+  // Check auth first, then hand over to Intl middleware for routing
   if ((isAdminRoute || isMemberRoute) && !token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const url = request.nextUrl.clone();
+    url.pathname = getLocalePath("/login");
+    return NextResponse.redirect(url);
   }
 
-  // Role-based access control
   if (token && userRole) {
-    // Prevent access to login/register if already logged in
     if (isAuthRoute) {
       if (userRole === "admin") {
-        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+        const url = request.nextUrl.clone();
+        url.pathname = getLocalePath("/admin/dashboard");
+        return NextResponse.redirect(url);
       } else if (userRole === "anggota" || userRole === "user") {
-        // adjusting assumption: user might be redirected to member dashboard
-        return NextResponse.redirect(new URL("/member/dashboard", request.url));
-      } else {
-        // Allow access to login if role is unknown/invalid to let them re-login
-        // or clear cookies manually. Redirecting to /login causes a loop.
-        return NextResponse.next();
+        const url = request.nextUrl.clone();
+        url.pathname = getLocalePath("/member/dashboard");
+        return NextResponse.redirect(url);
       }
     }
 
-    // Protect admin routes
     if (isAdminRoute && userRole !== "admin") {
-      // Redirect unauthorized users to their appropriate dashboard or home
-      return NextResponse.redirect(new URL("/login", request.url));
+      const url = request.nextUrl.clone();
+      url.pathname = getLocalePath("/login");
+      return NextResponse.redirect(url);
     }
 
-    // Protect member routes
     if (isMemberRoute && userRole !== "anggota" && userRole !== "user") {
-      return NextResponse.redirect(new URL("/login", request.url));
+      const url = request.nextUrl.clone();
+      url.pathname = getLocalePath("/login");
+      return NextResponse.redirect(url);
     }
   }
 
-  return NextResponse.next();
+  return intlMiddleware(request);
 }
 
 export const config = {

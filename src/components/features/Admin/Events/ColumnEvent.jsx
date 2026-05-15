@@ -18,7 +18,7 @@ import { useState } from "react";
 import { EditEvent } from "./EditEvent";
 import { DeleteEvent } from "./DeleteEvent";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("id-ID", {

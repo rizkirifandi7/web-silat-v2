@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { login as loginApi } from "@/lib/api/auth";
 import useAuthStore from "@/store/useAuthStore";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 
 export const useLogin = () => {
   const setAuth = useAuthStore((state) => state.setAuth);

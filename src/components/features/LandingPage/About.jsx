@@ -1,9 +1,11 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 const About = () => {
+  const t = useTranslations("About");
   return (
     <section className="relative py-24 overflow-hidden bg-background">
       {/* Background Image with Overlay */}
@@ -32,14 +34,14 @@ const About = () => {
               <div className="inline-block relative">
                 <div className="absolute inset-0 bg-primary/20 skew-x-[-15deg] rounded-sm transform scale-105" />
                 <span className="relative px-3 py-1 text-primary font-bold tracking-widest uppercase text-sm z-10">
-                  Tentang Kami
+                  {t("section_title")}
                 </span>
               </div>
 
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground text-balance uppercase italic leading-none">
-                Melestarikan Budaya, <br />
+                {t("title_span1")} <br />
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-red-600 relative inline-block pr-2">
-                  Membangun Karakter
+                  {t("title_span2")}
                   <svg
                     className="absolute w-full h-3 -bottom-1 left-0 text-primary opacity-60"
                     viewBox="0 0 200 9"
@@ -60,7 +62,7 @@ const About = () => {
             <div className="space-y-6 text-muted-foreground text-lg leading-relaxed text-balance font-medium">
               <p>
                 <strong className="text-foreground">
-                  Pusaka Mande Muda Indonesia (PUSAMADA)
+                  {t("desc_p1_strong")}
                 </strong>{" "}
                 hadir sebagai wadah pelestarian seni bela diri Pencak Silat,
                 warisan leluhur yang sarat akan nilai filosofis dan budi
@@ -81,7 +83,7 @@ const About = () => {
               >
                 <Link href="/tentang">
                   <span className="skew-x-10 flex items-center gap-2">
-                    PELAJARI SEJARAH KAMI <ArrowRight className="w-4 h-4" />
+                    {t("cta")} <ArrowRight className="w-4 h-4" />
                   </span>
                 </Link>
               </Button>

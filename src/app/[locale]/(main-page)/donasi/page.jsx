@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Heart, ArrowRight, Share2, Target, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";

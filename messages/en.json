@@ -1,0 +1,112 @@
+{
+  "Index": {
+    "title": "Welcome to Silat"
+  },
+  "Navbar": {
+    "home": "Home",
+    "about": "About",
+    "gallery": "Gallery",
+    "catalog": "Catalog",
+    "donate": "Donate",
+    "events": "Events",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "REGISTER"
+  },
+  "Footer": {
+    "description": "Preserving the culture of pencak silat, building the character of a resilient and noble younger generation.",
+    "explore": "Explore",
+    "services": "Services",
+    "contactUs": "Contact Us",
+    "address": "Pasirwangi, Ujungberung, Bandung, West Java",
+    "copyright": "All Rights Reserved",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "links": {
+      "about": "About Us",
+      "events": "Events & Championships",
+      "gallery": "Activity Gallery",
+      "news": "Latest News",
+      "donate": "Donate",
+      "catalog": "Merchandise Catalog",
+      "register": "Member Registration",
+      "verify": "Certificate Verification"
+    }
+  },
+  "Hero": {
+    "tagline": "Pencak Silat",
+    "motto": "High Knowledge, Broad Abilities, Pure Mind, Great Devotion.",
+    "join": "JOIN NOW",
+    "verify": "CHECK MEMBERSHIP"
+  },
+  "About": {
+    "section_title": "About Us",
+    "title_span1": "Preserving Culture,",
+    "title_span2": "Building Character",
+    "desc_p1_strong": "Pusaka Mande Muda Indonesia (PUSAMADA)",
+    "desc_p1": " is here as a forum for the preservation of the martial art of Pencak Silat, an ancestral heritage full of philosophical and moral values.",
+    "desc_p2": "We are committed to not only producing martial artists who are physically tough, but also have a steely mentality, noble character, and uphold the values of honor and brotherhood.",
+    "cta": "LEARN OUR HISTORY",
+    "quote": "\"Pencak Silat is not just about punching, but about self-control.\""
+  },
+  "Activities": {
+    "section_title": "Our Activities",
+    "title_span1": "Agendas &",
+    "title_span2": "Activities",
+    "desc": "Various positive activities to build a resilient, high-achieving, and noble younger generation.",
+    "cta": "VIEW ALL",
+    "items": {
+      "item1_title": "Routine Training",
+      "item1_desc": "Regular physical and mental coaching to form a warrior's character.",
+      "item1_cat": "Main",
+      "item2_title": "Belt Testing",
+      "item2_desc": "Skill level evaluation.",
+      "item2_cat": "Evaluation",
+      "item3_title": "Silat Championship",
+      "item3_desc": "Achieving national accomplishments.",
+      "item3_cat": "Achievement",
+      "item4_title": "Social Service",
+      "item4_desc": "Community service.",
+      "item4_cat": "Social",
+      "item5_title": "Art Performance",
+      "item5_desc": "Cultural preservation.",
+      "item5_cat": "Culture"
+    }
+  },
+  "Contact": {
+    "section_title": "Join Us",
+    "title_span1": "Start Your Journey",
+    "title_span2": "To Become a Warrior",
+    "desc": "Ready to train your physics, mentalities, and characters? Contact us for registration information and training schedules.",
+    "cta": "CONTACT US",
+    "loc_title": "Training Location",
+    "loc_desc": "Sukarasa Village, Arjasari, Bandung Regency",
+    "map_label": "PUSAMADA Headquarters"
+  },
+  "Tentang": {
+    "loading": "Loading Information...",
+    "title": "About PUSAMADA",
+    "subtitle_1": "Preserving",
+    "subtitle_2": "Culture",
+    "subtitle_3": "Building",
+    "subtitle_4": "Character",
+    "subtitle_5": "of the Archipelago"
+  },
+  "Galeri": {
+    "subtitle": "Our Gallery",
+    "title_1": "Activity",
+    "title_2": "Documentation",
+    "description": "Recording the traces of struggle, achievements, and togetherness of the large family of Pusaka Mande Muda Indonesia.",
+    "labels": {
+      "all": "All",
+      "event": "Event",
+      "training": "Training",
+      "competition": "Competition",
+      "ceremony": "Ceremony",
+      "other": "Others"
+    },
+    "loading": "Loading photos...",
+    "empty": "No gallery available",
+    "empty_desc": "No gallery available for this category yet."
+  }
+}

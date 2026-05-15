@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import {
   Facebook,
@@ -12,8 +12,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useTranslations } from "next-intl";
 
 const Footer = () => {
+  const t = useTranslations("Footer");
+  const navTranslation = useTranslations("Navbar");
   const currentYear = new Date().getFullYear();
 
   return (
@@ -47,8 +50,8 @@ const Footer = () => {
               </div>
             </Link>
             <p className="text-zinc-400 text-sm leading-relaxed max-w-sm">
-              Pusaka Mande Muda Indonesia. Melestarikan budaya pencak silat,
-              membangun karakter generasi muda yang tangguh dan berakhlak mulia.
+              {t("description")}
+              
             </p>
             <div className="flex gap-3">
               {[
@@ -101,15 +104,15 @@ const Footer = () => {
           {/* Column 2: Quick Links (Spans 2 columns) */}
           <div className="lg:col-span-2 lg:col-start-6">
             <h3 className="font-black text-lg text-white uppercase italic mb-6 relative inline-block">
-              Jelajahi
+              {t("explore")}
               <span className="absolute -bottom-1 left-0 w-1/2 h-1 bg-primary skew-x-[-10deg]" />
             </h3>
             <ul className="space-y-3">
               {[
-                { label: "Tentang Kami", href: "/tentang" },
-                { label: "Event & Kejuaraan", href: "/events" },
-                { label: "Galeri Kegiatan", href: "/galeri" },
-                { label: "Berita Terkini", href: "/berita" },
+                { labelKey: "about", href: "/tentang" },
+                { labelKey: "events", href: "/events" },
+                { labelKey: "gallery", href: "/galeri" },
+                { labelKey: "news", href: "/berita" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -117,25 +120,25 @@ const Footer = () => {
                     className="text-zinc-400 hover:text-primary transition-colors text-sm font-medium flex items-center gap-2 group"
                   >
                     <span className="w-1 h-1 bg-zinc-600 rounded-full group-hover:bg-primary transition-colors" />
-                    {link.label}
+                    {t(`links.${link.labelKey}`)}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 3: Layanan (Spans 2 columns) */}
+          {/* Column 3: {t("services")} (Spans 2 columns) */}
           <div className="lg:col-span-2">
             <h3 className="font-black text-lg text-white uppercase italic mb-6 relative inline-block">
-              Layanan
+              {t("services")}
               <span className="absolute -bottom-1 left-0 w-1/2 h-1 bg-primary skew-x-[-10deg]" />
             </h3>
             <ul className="space-y-3">
               {[
-                { label: "Donasi", href: "/donasi" },
-                { label: "Katalog Merchandise", href: "/katalog" },
-                { label: "Pendaftaran Anggota", href: "/daftar" },
-                { label: "Verifikasi Sertifikat", href: "/verify" },
+                { labelKey: "donate", href: "/donasi" },
+                { labelKey: "catalog", href: "/katalog" },
+                { labelKey: "register", href: "/daftar" },
+                { labelKey: "verify", href: "/verify" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -143,7 +146,7 @@ const Footer = () => {
                     className="text-zinc-400 hover:text-primary transition-colors text-sm font-medium flex items-center gap-2 group"
                   >
                     <span className="w-1 h-1 bg-zinc-600 rounded-full group-hover:bg-primary transition-colors" />
-                    {link.label}
+                    {t(`links.${link.labelKey}`)}
                   </Link>
                 </li>
               ))}
@@ -153,7 +156,7 @@ const Footer = () => {
           {/* Column 4: Contact (Spans 4 columns) */}
           <div className="lg:col-span-3">
             <h3 className="font-black text-lg text-white uppercase italic mb-6 relative inline-block">
-              Hubungi Kami
+              {t("contactUs")}
               <span className="absolute -bottom-1 left-0 w-1/2 h-1 bg-primary skew-x-[-10deg]" />
             </h3>
             <ul className="space-y-4">
@@ -198,13 +201,13 @@ const Footer = () => {
               href="/privacy"
               className="hover:text-primary transition-colors hover:underline decoration-primary underline-offset-4"
             >
-              Privacy Policy
+              {t("privacy")}
             </Link>
             <Link
               href="/terms"
               className="hover:text-primary transition-colors hover:underline decoration-primary underline-offset-4"
             >
-              Terms of Service
+              {t("terms")}
             </Link>
           </div>
         </div>

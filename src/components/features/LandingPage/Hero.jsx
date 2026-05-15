@@ -1,10 +1,12 @@
 import React from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { LogIn, ScanLine, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Hero = () => {
+  const t = useTranslations("Hero");
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-background pt-20 lg:pt-0">
       {/* Background Image with Overlay */}
@@ -31,7 +33,7 @@ const Hero = () => {
               <div className="inline-block relative">
                 <div className="absolute inset-0 bg-primary/20 skew-x-[-15deg] rounded-sm transform scale-105" />
                 <span className="relative px-3 py-1 text-primary font-bold tracking-widest uppercase text-sm z-10">
-                  Pencak Silat
+                  {t("tagline")}
                 </span>
               </div>
 
@@ -61,7 +63,7 @@ const Hero = () => {
                 <span className="text-primary text-4xl absolute -top-4 -left-4 opacity-20">
                   &quot;
                 </span>
-                Élmu Luhung Jembar Kabisa, Budi Suci Gede Bakti.
+                {t("motto")}
                 <span className="text-primary text-4xl absolute -bottom-4 right-0 opacity-20">
                   &quot;
                 </span>
@@ -76,7 +78,7 @@ const Hero = () => {
               >
                 <Link href="/kontak">
                   <span className="skew-x-10 flex items-center gap-2">
-                    GABUNG SEKARANG <ArrowRight className="w-5 h-5" />
+                    {t("join")} <ArrowRight className="w-5 h-5" />
                   </span>
                 </Link>
               </Button>
@@ -88,7 +90,7 @@ const Hero = () => {
               >
                 <Link href="/verify">
                   <span className="skew-x-10 flex items-center gap-2">
-                    CEK KEANGGOTAAN <ScanLine className="w-5 h-5" />
+                    {t("verify")} <ScanLine className="w-5 h-5" />
                   </span>
                 </Link>
               </Button>
